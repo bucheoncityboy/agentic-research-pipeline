@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[CA] 셀트리온 (068270) | Company Analysis v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root{--navy:#0f1a2e;--blue:#1a3a5c;--accent:#c9a84c;--red:#c0392b;--green:#27ae60;--bg:#fafaf9;--card:#fff;--text:#1a1a1a;--muted:#6b7280;--border:#e5e7eb;--bull-bg:#e8f5e9;--bear-bg:#fbe9e7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Pretendard,Malgun Gothic,Apple SD Gothic Neo,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;display:flex}
+nav{width:220px;background:var(--navy);color:#fff;padding:28px 18px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+nav a{display:block;color:#94a3b8;text-decoration:none;padding:5px 0;font-size:.82em;border-left:2px solid transparent;padding-left:10px;transition:.1s}
+nav a:hover{color:#fff;border-left-color:var(--accent)}
+nav .logo{font-size:1em;font-weight:700;margin-bottom:28px;color:#fff}
+nav .logo span{color:var(--accent)}
+main{flex:1;min-width:0;padding:36px 44px}
+section{margin-bottom:32px}
+section h2{font-size:1.15em;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+section h2 .num{background:var(--navy);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8em;flex-shrink:0}
+section h3{font-size:.95em;font-weight:600;color:var(--blue);margin:18px 0 8px}
+table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:.85em}
+th{background:var(--navy);color:#fff;padding:8px 10px;font-size:.78em;text-align:left;font-weight:600}
+td{padding:7px 10px;border-bottom:1px solid var(--border)}
+tr:nth-child(even) td{background:#f8fafc}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.up{color:#f87171}.down{color:#60a5fa}
+.badge-buy{background:#dcfce7;color:#166534;padding:1px 7px;border-radius:3px;font-weight:600;font-size:.82em}
+.badge-event{background:#dc2626;color:#fff;padding:1px 6px;border-radius:3px;font-size:.72em;font-weight:700}
+.bull-block{background:#e8f5e9;border-left:4px solid var(--green);padding:10px 14px;margin:6px 0;border-radius:0 4px 4px 0}
+.bear-block{background:#fbe9e7;border-left:4px solid var(--red);padding:10px 14px;margin:6px 0;border-radius:0 4px 4px 0}
+.bull-block ul,.bear-block ul{margin:6px 0 0 18px}
+.verdict{background:var(--navy);color:#fff;padding:18px 22px;border-radius:6px;text-align:center;margin:14px 0}
+.verdict .action{font-size:1.3em;font-weight:800;color:var(--accent)}
+.chart-wrap{background:var(--card);border:1px solid var(--border);padding:16px;border-radius:6px;margin:12px 0}
+.chart-wrap canvas{width:100%!important;max-height:380px}
+.chart-wrap-sm{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:6px;margin:12px 0}
+.chart-wrap-sm canvas{width:100%!important;max-height:240px}
+.gauge-card{background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;text-align:center;min-width:120px}
+.exec-summary{background:var(--navy);color:#fff;padding:18px 22px;border-radius:6px;margin-bottom:28px}
+.exec-summary h3{font-size:.82em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px 0}
+.exec-summary .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.exec-summary .metric .label{font-size:.65em;color:#94a3b8;text-transform:uppercase}
+.exec-summary .metric .value{font-size:1.2em;font-weight:700}
+.exec-summary .metric .change{font-size:.75em}
+.news-card{display:flex;flex-direction:column;padding:10px 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;transition:background .1s}
+.news-card:hover{background:#f8fafc}
+.news-card .meta{font-size:.72em;color:var(--muted);margin-bottom:3px}
+.news-card .headline{font-size:.85em;font-weight:500}
+.period-tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.period-tab{padding:3px 12px;border-radius:4px;font-size:.76em;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:.1s}
+.period-tab:hover{border-color:var(--accent);color:var(--navy)}
+.period-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.risk-high{color:var(--red);font-weight:700}.risk-mid{color:#d97706;font-weight:700}
+.dispersion-high{color:var(--red);font-weight:700}
+.report-footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--border);color:var(--muted);font-size:.72em;line-height:1.6}
+.flash-alert{background:linear-gradient(135deg,#7f1d1d,#991b1b);color:#fff;padding:16px 20px;border-radius:6px;margin-bottom:32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}.flash-icon{font-size:2em;line-height:1}.flash-text{flex:1}.flash-text strong{font-size:1.1em}.flash-text .sub{font-size:.85em;color:#fca5a5;margin-top:4px}.report-header{margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid var(--navy)}.tag{font-size:.75em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:600}.sub{color:var(--muted);font-size:.9em}.neutral{color:#94a3b8}.risk-low{color:var(--green);font-weight:700}.gauge-row{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}.g-title{font-size:.65em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.g-bar-wrap{width:100%;background:rgba(255,255,255,0.1);border-radius:4px;height:22px;position:relative;overflow:hidden;margin:8px 0}.g-bar-fill{height:100%;border-radius:4px;transition:width .5s}.g-labels{display:flex;justify-content:space-between;font-size:.55em;color:#64748b;margin-top:2px}.g-value{font-size:1.6em;font-weight:800;line-height:1}.g-label{font-size:.7em;opacity:.8}.g-src{font-size:.5em;color:#64748b;margin-top:6px}.analyst-dist{display:flex;gap:4px;margin:12px 0;height:24px}.analyst-bar{height:100%;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.65em;font-weight:700;color:#fff;transition:width .5s}.badge-ai{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:3px;font-size:.75em;font-weight:600;margin-left:8px}.badge-hold{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:3px;font-weight:600;font-size:.85em}.badge-new{background:#3b82f6;color:#fff;padding:2px 8px;border-radius:3px;font-size:.7em;font-weight:700;margin-left:8px}.fear-gauge{transition:background .3s}@media(max-width:768px){body{flex-direction:column}nav{width:100%;height:auto;position:static;padding:16px}main{padding:16px}.exec-summary .metrics{grid-template-columns:repeat(2,1fr)}}
+.src-tip{position:relative;display:inline;cursor:pointer}.src-tip .src-btn{font-size:.7em;color:var(--muted);margin-left:3px;border-bottom:1px dotted var(--muted);cursor:pointer}.src-tip .src-btn:hover{color:var(--accent)}.src-tip .src-box{display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:var(--navy);color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:.72em;line-height:1.5;white-space:pre-line;width:300px;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.35);pointer-events:none}.src-tip .src-box::after{content:;position:absolute;top:100%;left:16px;border:6px solid transparent;border-top-color:var(--navy)}.src-tip:hover .src-box{display:block}</style>
+</head>
+<body>
+<nav>
+<div class="logo">Company <span>Analysis</span></div>
+<a href="#s0">1. Executive Summary</a>
+<a href="#s0e">2. Sector Alert</a>
+<a href="#sa">3. Company Overview</a>
+<a href="#sa2">3.1 Sector Positioning</a>
+<a href="#s1">4. Quant Dashboard</a>
+<a href="#s1c">4.1 Consensus Chart</a>
+<a href="#s1a">4.2 Price & Flow</a>
+<a href="#s1l">4.3 Leading Indicators</a>
+<a href="#s1d">4.4 Derivatives & Flows</a>
+<a href="#s2">5. Market Narrative</a>
+<a href="#s2n">5.1 News Monitor</a>
+<a href="#s3">6. Core Debates</a>
+<a href="#s4">7. Risks & Calendar</a>
+<a href="#s5">8. Synthesis & Action</a>
+<div style="margin-top:auto;padding-top:20px;font-size:.65em;color:#64748b;line-height:1.5">GJC Pipeline v3.0<br>2026-07-03</div>
+</nav>
+<main>
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;border-bottom:3px solid var(--navy);padding-bottom:16px">
+<div><h1>셀트리온 <span style="font-weight:400;color:var(--muted)">068270</span></h1>
+<div style="color:var(--muted)">2026-07-03 | 미래에셋·DS·신한·KB·대신·삼성·NH 등 19개사 통합</div></div>
+<div style="display:flex;gap:10px">
+<div class="gauge-card"><div style="color:var(--accent);font-size:.55em;text-transform:uppercase;letter-spacing:1px">RSI(14)</div>
+<div style="background:rgba(255,255,255,0.1);border-radius:4px;height:16px;margin:4px 0"><div style="width:55%;background:#27ae60;height:100%;border-radius:4px"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:.48em;color:#64748b"><span>과매도(0)</span><span>과매수(100)</span></div>
+<div style="font-size:1.3em;font-weight:800;color:#27ae60;line-height:1.2">55.0</div>
+<div style="font-size:.55em;color:#94a3b8">중립 · investing.com</div></div>
+<div class="gauge-card"><div style="color:var(--accent);font-size:.55em;text-transform:uppercase;letter-spacing:1px">RATING</div>
+<div style="font-size:1.3em;font-weight:800;color:var(--accent);line-height:1.2;margin-top:8px">4.00</div>
+<div style="font-size:.55em;color:#94a3b8">/ 5 매수 · 19개사</div></div>
+</div></div>
+
+<!-- SECTION 1: EXECUTIVE SUMMARY -->
+<section id="s0">
+<div class="exec-summary">
+<h3>Executive Summary</h3>
+<div class="metrics">
+<div class="metric"><div class="label">현재가</div><div class="value" style="color:#27ae60">183,600</div><div class="change" style="color:#27ae60">전일 +7,000 (+3.96%)</div></div>
+<div class="metric"><div class="label">컨센서스 목표가</div><div class="value">262,511</div><div class="change" style="color:#27ae60">업사이드 +43.0%</div></div>
+<div class="metric"><div class="label">영업이익 (2026E)</div><div class="value" style="color:#27ae60">1.76조</div><div class="change">YoY +50.2%</div></div>
+<div class="metric"><div class="label">최종 판단</div><div class="value" style="color:var(--accent)">매수 (비중 확대)</div><div class="change">2Q 서프라이즈 · 특허절벽 수혜</div></div>
+</div></div></section>
+
+<!-- SECTION 2: SECTOR ALERT -->
+<section id="s0e">
+<h2><span class="num">2</span> 제약·바이오 섹터 현황 <span class="badge-event">HOT</span></h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+2Q26 잠정실적 서프라이즈: 매출 1.3조(YoY +35.2%), 영업이익 4,300억(YoY +77.3%), OPM 33% — 역대 2분기 최대</blockquote>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+<div style="background:var(--bull-bg);border-left:4px solid var(--green);padding:10px 14px;border-radius:4px">
+<strong style="color:var(--green);">신규 제품 비중 60%+ 돌파</strong>
+<ul style="margin:6px 0 0 16px;font-size:.83em">
+<li><strong>짐펜트라(램시마SC)</strong> 美 처방 지속 경신</li>
+<li><strong>유플라이마</strong> 글로벌 점유율 확대</li>
+<li><strong>스테키마</strong> 미국 시장 침투 본격화</li></ul></div>
+<div style="background:var(--bull-bg);border-left:4px solid var(--green);padding:10px 14px;border-radius:4px">
+<strong style="color:var(--green);">특허절벽 사이클 진입</strong>
+<ul style="margin:6px 0 0 16px;font-size:.83em">
+<li><strong>스텔라라(2025)</strong> 스테키마 출시 완료</li>
+<li><strong>키트루다(2028)</strong> 250억$ 시밀러 개발 중</li>
+<li><strong>다잘렉스(2029)</strong> 100억$ 특허 만료 예정</li></ul></div>
+</div>
+</section>
+
+<!-- SECTION 3: COMPANY OVERVIEW -->
+<section id="sa">
+<h2><span class="num">3</span> 기업 개요 &amp; 경쟁 구도</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+섹터: <strong>제약·바이오</strong> | 시장 규모: 약 3,000억 달러(글로벌 바이오시밀러, 2030E) | CAGR: 15~20%</blockquote>
+
+<h3>기업 프로필</h3>
+<table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td><strong>기업명</strong></td><td>셀트리온 (068270) · KOSPI</td></tr>
+<tr><td><strong>설립</strong></td><td>2002년 설립, 글로벌 바이오시밀러 선도기업</td></tr>
+<tr><td><strong>최대주주</strong></td><td>셀트리온홀딩스 외 96인 (32.68%), 국민연금 (6.67%)</td></tr>
+<tr><td><strong>시가총액</strong></td><td>42조 6,969억원 (코스피 19위)</td></tr>
+<tr><td><strong>발행주식수</strong></td><td>232,553,706주 (액면가 1,000원)</td></tr>
+<tr><td><strong>외국인 지분율</strong></td><td>24.50%</td></tr>
+<tr><td><strong>52주 최고/최저</strong></td><td>239,245원 / 158,500원 (Beta: 0.22)</td></tr>
+<tr><td><strong>배당수익률</strong></td><td>0.40% (DPS 715원, 2025년)</td></tr>
+</table>
+
+<h3>사업 부문</h3>
+<table>
+<tr><th>사업 부문</th><th>주요 제품/서비스</th><th class="num">매출 비중</th></tr>
+<tr><td>바이오시밀러</td><td>램시마SC(짐펜트라)·유플라이마·스테키마·트룩시마·허쥬마 등 글로벌 바이오시밀러 개발·생산·판매. 140개국 이상 진출. 신규 제품 비중 60%+.</td><td class="num">약 85%</td></tr>
+<tr><td>CDMO·위탁생산</td><td>미국 브랜치버그 공장 CMO 수주(일라이 릴리). 국내 4·5공장 증설 추진. 글로벌 위탁생산 역량 확대.</td><td class="num">약 10%</td></tr>
+<tr><td>신약·파이프라인</td><td>CT-P55(코센틱스 시밀러)·허쥬마SC 허가 진행. 키트루다·다잘렉스 시밀러 개발. 2030년 30개 포트폴리오 목표.</td><td class="num">약 5%</td></tr>
+</table>
+
+<h3>경쟁사 및 시장 비교</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0">
+<div class="chart-wrap" style="margin:0"><canvas id="marketShareChart"></canvas></div>
+<div>
+<table style="margin:0">
+<tr><th>기업</th><th>시장 위치</th><th class="num">시가총액</th></tr>
+<tr><td><strong>셀트리온</strong></td><td>글로벌 바이오시밀러 선도</td><td class="num">42.7조</td></tr>
+<tr><td>삼성바이오로직스</td><td>글로벌 CDMO 1위</td><td class="num">65.8조</td></tr>
+<tr><td>삼성에피스</td><td>바이오시밀러 후발주자</td><td class="num">10.4조</td></tr>
+<tr><td>SK바이오팜</td><td>신약 개발 전문</td><td class="num">6.8조</td></tr>
+</table>
+<p style="font-size:.78em;color:var(--muted);margin-top:6px">출처: Naver Finance 동종업종비교 (2026-07-03)</p>
+</div></div>
+
+<h3>최근 3개년 요약 재무 (연결)</h3>
+<table>
+<tr><th class="num">연도</th><th class="num">매출액</th><th class="num">영업이익</th><th class="num">영업이익률</th><th class="num">당기순이익(지배)</th></tr>
+<tr><td>2023</td><td class="num">2.18조</td><td class="num">6,515억</td><td class="num">29.93%</td><td class="num">5,356억</td></tr>
+<tr><td>2024</td><td class="num">3.56조</td><td class="num">4,920억</td><td class="num">13.83%</td><td class="num">4,227억</td></tr>
+<tr><td>2025</td><td class="num">4.16조</td><td class="num">1.17조</td><td class="num">28.07%</td><td class="num">1.03조</td></tr>
+<tr><td>2026E</td><td class="num">5.30조</td><td class="num">1.76조</td><td class="num">33.14%</td><td class="num">1.46조</td></tr>
+</table>
+<p style="font-size:.75em;color:var(--muted)">출처: FnGuide · WiseReport (연결 IFRS 기준, 수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 3.1: SECTOR POSITIONING -->
+<section id="sa2">
+<h2><span class="num">3.1</span> 섹터 내 입지 분석</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+제약·바이오 섹터 내 경쟁적 위치와 수익성 비교 (2026.03 분기 기준)</blockquote>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div>
+<h3>수익성 비교</h3>
+<table>
+<tr><th>기업</th><th class="num">영업이익률</th><th class="num">ROE</th><th class="num">PER</th><th class="num">PBR</th></tr>
+<tr><td><strong>셀트리온</strong></td><td class="num"><strong>28.11%</strong></td><td class="num"><strong>7.28%</strong></td><td class="num"><strong>35.13</strong></td><td class="num"><strong>2.39</strong></td></tr>
+<tr><td>삼성바이오로직스</td><td class="num">46.20%</td><td class="num">19.56%</td><td class="num">46.17</td><td class="num">8.29</td></tr>
+<tr><td>삼성에피스</td><td class="num">19.94%</td><td class="num">-</td><td class="num">19.64</td><td class="num">1.72</td></tr>
+<tr><td>SK바이오팜</td><td class="num">39.40%</td><td class="num">46.52%</td><td class="num">19.35</td><td class="num">7.24</td></tr>
+</table>
+</div>
+<div>
+<h3>외국인 지분율 비교</h3>
+<table>
+<tr><th>기업</th><th class="num">외국인%</th><th class="num">시총(조)</th></tr>
+<tr><td><strong>셀트리온</strong></td><td class="num"><strong>24.50%</strong></td><td class="num"><strong>42.7</strong></td></tr>
+<tr><td>삼성바이오로직스</td><td class="num">12.72%</td><td class="num">65.8</td></tr>
+<tr><td>삼성에피스</td><td class="num">6.68%</td><td class="num">10.4</td></tr>
+<tr><td>SK바이오팜</td><td class="num">12.31%</td><td class="num">6.8</td></tr>
+</table>
+</div>
+</div>
+
+<h3>핵심 인사이트</h3>
+<p style="font-size:.85em;color:var(--text);margin:8px 0">
+셀트리온은 글로벌 바이오시밀러 시장 선도기업으로서 영업이익률 28.11%의 높은 수익성을 유지 중. 삼성바이오로직스(PER 46.17) 대비 PER 35.13으로 밸류에이션 부담이 낮은 편. 2024년 합병 관련 일회성 비용 해소 후 2025년부터 본격적인 실적 턴어라운드 성공. 2026년 2분기 영업이익률 33%로 추가 개선. 업종 평균 PER 150.66배 대비 크게 할인된 수준으로, 실적 성장 대비 밸류에이션 매력도 높음. 외국인 지분율 24.50%로 바이오 섹터 내 가장 높은 수준.
+</p>
+<p style="font-size:.72em;color:var(--muted)">출처: Naver Finance 동종업종비교 · FnGuide (수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 4: QUANT DASHBOARD -->
+<section id="s1">
+<h2><span class="num">4</span> 정량적 컨센서스 및 이격도 분석</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+19개 증권사(미래에셋·DS·IBK·KB·대신·신한·한국투자·현대차·SK·삼성·NH·다올 등) 리포트 통합 매핑</blockquote>
+
+<table>
+<tr><th>지표 항목</th><th class="num">산출 데이터</th><th>분석</th></tr>
+<tr><td><strong>현재 주가</strong></td><td class="num" style="color:#27ae60">183,600원 (07/03)</td><td>52주 신고가 239,245 대비 -23.2% 하락. 2Q 서프라이즈로 +3.96% 반등</td></tr>
+<tr><td><strong>통합 목표주가</strong></td><td class="num">262,511원</td><td>19개사 산술 평균. 업사이드 +43.0%</td></tr>
+<tr><td><strong>목표가 밴드</strong></td><td class="num">320,000(DS) ~ 238,292(IBK)</td><td>하우스 편차 81,708원 — <span class="dispersion-high">확대</span></td></tr>
+<tr><td><strong>영업이익 (2026E)</strong></td><td class="num">1.76조원</td><td>YoY +50.2%. 2027E 2.08조(+18.7%)</td></tr>
+<tr><td><strong>PER / PBR (2026E)</strong></td><td class="num">28.47배 / 2.20배</td><td>업종 평균 PER 150.66배 대비 대폭 할인</td></tr>
+<tr><td><strong>추정치 이격도</strong></td><td class="num"><span class="dispersion-high">대</span></td><td>DS 320K vs IBK 238K. 신약 가치 평가 시각차</td></tr>
+</table>
+
+<h3>증권사별 목표주가 현황</h3>
+<table>
+<tr><th>증권사</th><th>투자의견</th><th class="num">목표주가</th><th class="num">발표일</th><th>직전 대비</th><th>애널리스트</th></tr>
+<tr><td>DS투자증권</td><td><span class="badge-buy">BUY</span></td><td class="num">305,013</td><td class="num">05/28</td><td class="neutral">유지</td><td>김민정</td></tr>
+<tr><td>신한투자증권</td><td><span class="badge-buy">매수</span></td><td class="num">290,000</td><td class="num">05/15</td><td class="neutral">유지</td><td>이호철·엄민용</td></tr>
+<tr><td>한국투자증권</td><td><span class="badge-buy">매수</span></td><td class="num">290,000</td><td class="num">05/07</td><td class="neutral">유지</td><td>위해주·이다용</td></tr>
+<tr><td>대신증권</td><td><span class="badge-buy">Buy</span></td><td class="num">280,000</td><td class="num">05/20</td><td class="up">상향</td><td>홍가혜·이채리</td></tr>
+<tr><td>KB증권</td><td><span class="badge-buy">BUY</span></td><td class="num">270,000</td><td class="num">05/27</td><td class="up">신규</td><td>신지훈</td></tr>
+<tr><td>현대차증권</td><td><span class="badge-buy">BUY</span></td><td class="num">270,000</td><td class="num">05/07</td><td class="neutral">유지</td><td>김현석</td></tr>
+<tr><td>미래에셋증권</td><td><span class="badge-buy">매수</span></td><td class="num">260,000</td><td class="num">06/15</td><td class="up">상향</td><td>김승민</td></tr>
+<tr><td>삼성증권</td><td><span class="badge-buy">BUY</span></td><td class="num">260,000</td><td class="num">05/07</td><td class="neutral">유지</td><td>서근희·신수한</td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: FnGuide · WiseReport · 한국경제 컨센서스 (수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 4.1: CONSENSUS CHART -->
+<section id="s1c">
+<h2><span class="num">4.1</span> 컨센서스 추이 차트</h2>
+<div class="chart-wrap"><canvas id="consensusChart"></canvas></div>
+<div class="chart-wrap" style="margin-top:14px"><canvas id="targetBarChart"></canvas></div>
+</section>
+
+<!-- SECTION 4.2: PRICE & FLOW -->
+<section id="s1a">
+<h2><span class="num">4.2</span> 주가 및 투자자별 매매동향</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+주가(좌)와 개인·외국인·기관 순매수(우). 개인 = -(외국인+기관) 산출.</blockquote>
+
+<div class="period-tabs">
+<span class="period-tab active" data-period="daily" onclick="switchPeriod('daily')">일별</span>
+<span class="period-tab" data-period="weekly" onclick="switchPeriod('weekly')">주별</span>
+<span class="period-tab" data-period="monthly" onclick="switchPeriod('monthly')">월별</span>
+</div>
+
+<div class="chart-wrap"><canvas id="investorFlowChart"></canvas></div>
+<div id="flowTableWrap"></div>
+</section>
+
+<!-- SECTION 4.3: LEADING INDICATORS -->
+<section id="s1l">
+<h2><span class="num">4.3</span> 선행데이터 분석</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+섹터: <strong>제약·바이오</strong> | 분석 기준일: 2026-07-03</blockquote>
+
+<h3>글로벌 바이오시밀러 시장</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">특허절벽 도래로 글로벌 바이오시밀러 시장 폭발적 성장. 2030년 3,000억 달러+ 전망. 출처: Evaluate Pharma · IQVIA</p>
+<div class="chart-wrap-sm"><canvas id="leadingChart1"></canvas></div>
+
+<h3>블록버스터 특허 만료 규모</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">2025~2030년 글로벌 블록버스터 2,000억 달러+ 특허 만료. 키트루다(2028)·다잘렉스(2029) 최대. 출처: Evaluate Pharma</p>
+<div class="chart-wrap-sm"><canvas id="leadingChart2"></canvas></div>
+
+<h3>선행지표 종합</h3>
+<table>
+<tr><th>지표</th><th class="num">현재값</th><th>방향</th><th>평가</th></tr>
+<tr><td>바이오시밀러 시장</td><td class="num">2030년 3,000억$+</td><td class="up">▲ 확대</td><td>[긍정] 구조적 성장 사이클</td></tr>
+<tr><td>특허 만료 규모</td><td class="num">2,000억$+ (2025~2030)</td><td class="up">▲ 가속화</td><td>[긍정] 키트루다·다잘렉스 수혜</td></tr>
+<tr><td>짐펜트라 美 처방</td><td class="num">YoY +50%+</td><td class="up">▲ 확대</td><td>[긍정] 미국 시장 침투 성공</td></tr>
+<tr><td>업종 평균 PER</td><td class="num">150.66배</td><td class="neutral">셀트리온 28.47x</td><td>[긍정] 업종 대비 저평가</td></tr>
+</table>
+</section>
+</section>
+
+<!-- SECTION 4.4: DERIVATIVES & FLOWS -->
+<section id="s1d">
+<h2><span class="num">4.4</span> 파생상품 및 단기 수급 모니터</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+선물 베이시스/미결제약정, 옵션 OI 벽/풋콜비율, 대차잔고 — 3개 파생 데이터로 단기 수급 분석.</blockquote>
+
+<h3>(1) 선물 (Futures) — 베이시스 + 미결제약정</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">베이시스 = 선물−현물. 콘탱고(+)=하방지지, 백워데이션(−)=숏시그널. OI 증가=신규 포지션 유입.</p>
+<div class="chart-wrap-sm"><canvas id="futuresChart"></canvas></div>
+<table>
+<tr><th class="num">일자</th><th class="num">베이시스</th><th>상태</th><th class="num">선물 OI</th><th>해석</th></tr>
+<tr><td class="num">06/25</td><td class="num">-0.08</td><td class="down">백워데이션</td><td class="num">4,200</td><td>숏 포지션 유입 초기</td></tr>
+<tr><td class="num">06/26</td><td class="num">-0.15</td><td class="down">백워데이션</td><td class="num">4,500</td><td>숏 증가, 수급 부담</td></tr>
+<tr><td class="num">06/29</td><td class="num">+0.05</td><td class="up">콘탱고</td><td class="num">4,800</td><td>일시 반등 시 매수세</td></tr>
+<tr><td class="num">06/30</td><td class="num">-0.12</td><td class="down">백워데이션</td><td class="num">5,100</td><td>숏 재진입, 약세 심리</td></tr>
+<tr><td class="num">07/01</td><td class="num">+0.10</td><td class="up">콘탱고</td><td class="num">5,400</td><td>2Q 기대감 반영 매수</td></tr>
+<tr><td class="num">07/02</td><td class="num">+0.18</td><td class="up"><strong>콘탱고</strong></td><td class="num">5,800</td><td><strong>2Q 서프라이즈 선반영 매수세</strong></td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: KRX 파생상품 시장 · 개별주식선물 기준 (수집일: 2026-07-03)</p>
+
+<h3>(2) 옵션 (Options) — OI 벽 + 풋/콜 비율</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">OI 벽 = 미결제약정 최대 행사가. 풋/콜 비율 ↑ = 하락 베팅 증가(1.0=중립, 1.5+=극단).</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0">
+<div style="background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px">
+<div style="font-size:.68em;color:var(--muted)">콜옵션 OI (상방 저항 벽)</div>
+<div style="font-size:1.2em;font-weight:700;color:var(--red)">행사가 200,000</div>
+<div style="font-size:.85em;color:var(--muted)">12,450 계약 (22.3%)</div>
+<div style="font-size:.68em;color:var(--muted);margin-top:4px">반등 시 200,000원 상방 저항</div>
+</div>
+<div style="background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px">
+<div style="font-size:.68em;color:var(--muted)">풋옵션 OI (하방 지지 벽)</div>
+<div style="font-size:1.2em;font-weight:700;color:var(--blue)">행사가 170,000</div>
+<div style="font-size:.85em;color:var(--muted)">15,230 계약 (28.5%)</div>
+<div style="font-size:.68em;color:var(--muted);margin-top:4px">170,000원 하단 지지 — 구조적 바닥</div>
+</div>
+</div>
+
+<div class="chart-wrap-sm"><canvas id="optionsChart"></canvas></div>
+<table>
+<tr><th class="num">일자</th><th class="num">풋/콜 비율</th><th>상태</th><th>해석</th></tr>
+<tr><td class="num">06/25</td><td class="num">1.05</td><td>중립</td><td>관망 심리 우세</td></tr>
+<tr><td class="num">06/26</td><td class="num">1.12</td><td>약세</td><td>하락 베팅 증가</td></tr>
+<tr><td class="num">06/29</td><td class="num">0.95</td><td class="up">강세</td><td>반등 기대감 유입</td></tr>
+<tr><td class="num">06/30</td><td class="num">1.08</td><td>중립~약세</td><td>경계심 유지</td></tr>
+<tr><td class="num">07/01</td><td class="num">0.88</td><td class="up">강세</td><td>2Q 실적 기대 선반영</td></tr>
+<tr><td class="num">07/02</td><td class="num">0.82</td><td class="up"><strong>강세 전환</strong></td><td><strong>2Q 서프라이즈 → 콜 쏠림</strong></td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: KRX 파생상품 시장 · 개별주식옵션 기준 (수집일: 2026-07-03)</p>
+
+<h3>(3) 대차잔고 (Short Squeezability)</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">대차잔고 급감(-10%+/주)=숏커버링. 대차잔고 급증+주가 급락=숏스퀴즈 조건. 셀트리온은 저변동성(β 0.22) 종목으로 대차 변동 폭이 제한적.</p>
+<div class="chart-wrap-sm"><canvas id="loanChart"></canvas></div>
+<table>
+<tr><th class="num">주차</th><th class="num">대차잔고 변동</th><th class="num">주가 변동</th><th>시그널</th></tr>
+<tr><td class="num">6/1주</td><td class="down">-5.2%</td><td class="up">+2.4%</td><td>일부 숏커버링</td></tr>
+<tr><td class="num">6/2주</td><td class="down">-3.8%</td><td class="up">+1.8%</td><td>숏커버링 지속</td></tr>
+<tr><td class="num">6/3주</td><td class="up">+2.5%</td><td class="down">-4.2%</td><td>신규 숏 진입</td></tr>
+<tr><td class="num">7/1주</td><td class="down">-4.1%</td><td class="up">+1.2%</td><td>2Q 실적 앞두고 숏 커버</td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: KRX 공매도 통계 (수집일: 2026-07-03)</p>
+</section>
+
+
+<!-- SECTION 5: MARKET NARRATIVE -->
+<section id="s2">
+<h2><span class="num">5</span> 시장의 지배적 서사</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+셀트리온 관련 리서치에서 다수 증권사가 공통으로 동의하는 핵심 투자 포인트</blockquote>
+
+<ul style="margin-left:20px;line-height:1.8">
+<li><strong>특허절벽의 최대 수혜주</strong> — 2025~2030년 글로벌 블록버스터 2,000억 달러+ 특허 만료. 스텔라라·키트루다·다잘렉스 등 주요 적응증 바이오시밀러 개발 라인업 보유.</li>
+<li><strong>신규 제품 비중 60%+ 구조적 변화</strong> — 램시마SC(짐펜트라)·유플라이마·스테키마 등 고수익 신제품이 전체 매출 60%+ 차지. 질적 성장 본격화.</li>
+<li><strong>2분기 깜짝 실적 — 연간 가이던스 달성 가시화</strong> — OP 4,300억(YoY +77.3%, 컨센서스 상회). 1분기 3,219억→2분기 4,300억→3분기 5,000억→4분기 6,000억 목표 순항.</li>
+<li><strong>밸류에이션 리레이팅 초입</strong> — PER 28배(2026E)는 합병 리스크 해소+이익 체력 확인 감안 시 매력적. 2027E PER 24.5배로 추가 하락 전망.</li>
+<li><strong>CDMO·신약 모멘텀</strong> — 미국 브랜치버그 공장 일라이 릴리 CMO 수주. 코센틱스 시밀러(CT-P55)·키트루다 시밀러 등 파이프라인 가치 주목.</li>
+<li><strong>글로벌 처방 환경 개선</strong> — 미국·유럽 바이오시밀러 처방 장려 정책 확대. 오리지널 대비 30~50% 저렴한 가격 경쟁력.</li>
+</ul>
+</section>
+
+<!-- SECTION 5.1: NEWS MONITOR -->
+<section id="s2n">
+<h2><span class="num">5.1</span> 주요 뉴스 모니터링</h2>
+
+<a href="https://www.rapportian.com/news/articleView.html?idxno=237806" class="news-card" target="_blank">
+<div class="meta">2026-07-03 · 라포르시안</div>
+<div class="headline">셀트리온, 2분기 매출 1조3000억·영업이익 4300억…역대 2분기 최대 실적</div>
+</a>
+<a href="https://www.lcnews.co.kr/news/articleView.html?idxno=204402" class="news-card" target="_blank">
+<div class="meta">2026-07-03 · 라이센스뉴스</div>
+<div class="headline">셀트리온, 2분기 영업이익 77% 성장…영업이익률 33% 기록</div>
+</a>
+<a href="https://finance.naver.com/item/news_read.naver?article_id=0001257508&office_id=215" class="news-card" target="_blank">
+<div class="meta">2026-07-03 · 한국경제TV</div>
+<div class="headline">셀트리온, 신제품 해외서 날았다…연매출 5조 유력</div>
+</a>
+<a href="https://www.digitaltoday.co.kr/news/articleView.html?idxno=644728" class="news-card" target="_blank">
+<div class="meta">2026-02-24 · 디지털투데이</div>
+<div class="headline">셀트리온, 2026년 분기 영업이익 목표 제시…1Q 3000억→4Q 6000억</div>
+</a>
+<p style="font-size:.72em;color:var(--muted);margin-top:10px">※ 뉴스 출처: 라포르시안, 라이센스뉴스, 한국경제TV, 디지털투데이 (수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 6: CORE DEBATES -->
+<section id="s3">
+<h2><span class="num">6</span> 하우스별 핵심 이견 및 논쟁점</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+Bull(낙관론)과 Bear(신중론)으로 대치시킨 핵심 쟁점 분석</blockquote>
+
+<h3>6.1 쟁점 ①: 바이오시밀러 성장 모멘텀 지속성</h3>
+<div class="bull-block">
+<strong>Bull View — DS투자·대신·KB증권</strong>
+<ul>
+<li>"특허절벽 최대 수혜주. 2028년 키트루다·다잘렉스 특허 만료로 파이프라인 가치 폭발" <span style="font-size:.73em;color:var(--muted)">(DS투자증권, TP 305K~320K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> DS투자증권 · 김민정 · 2026-05-28<br><b>원문:</b> 신약 개발에 대한 리레이팅 시점. 특허절벽 최대 수혜. BUY TP 320K.</span></span></li>
+<li>"2분기 깜짝 실적. 신규 제품 매출 비중 60% 돌파는 구조적 변화의 증거" <span style="font-size:.73em;color:var(--muted)">(대신증권, TP 280K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 대신증권 · 홍가혜·이채리 · 2026-05-20<br><b>원문:</b> 이제 보이기 시작한다. 신규 제품 매출 비중 확대 확인. Buy TP 280K(상향).</span></span></li>
+<li>"블록버스터 의약품 특허만료 사이클, 정통 강자의 시간" <span style="font-size:.73em;color:var(--muted)">(KB증권, TP 270K 신규)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> KB증권 · 신지훈 · 2026-05-27<br><b>원문:</b> 블록버스터 의약품 특허만료 사이클, 정통 강자의 시간. BUY TP 270K(신규).</span></span></li>
+<li>"바이오시밀러에 대한 우호적 환경 조성 중. 밸류에이션 리레이팅 초입" <span style="font-size:.73em;color:var(--muted)">(미래에셋증권, TP 260K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 미래에셋증권 · 김승민 · 2026-06-15<br><b>원문:</b> 시밀러에 대한 우호적 환경 조성 중. 밸류에이션 리레이팅 초입. 매수 TP 260K(상향).</span></span></li>
+</ul>
+</div>
+<div class="bear-block">
+<strong>Bear View — 일부 신중론</strong>
+<ul>
+<li>"바이오시밀러 가격 경쟁 심화. 후발주자 진입으로 마진 압박 가능성" <span style="font-size:.73em;color:var(--muted)">(업계 분석)</span></li>
+<li>"삼성에피스·해외 경쟁사 바이오시밀러 출시로 점유율 경쟁 심화" <span style="font-size:.73em;color:var(--muted)">(경쟁 리스크)</span></li>
+<li>"미국 짐펜트라 처방 확대 속도가 기대치에 미치지 못할 가능성" <span style="font-size:.73em;color:var(--muted)">(시장 분석)</span></li>
+</ul>
+</div>
+
+<h3>6.2 쟁점 ②: 밸류에이션 정당성 — 실적 성장 vs 프리미엄</h3>
+<div class="bull-block">
+<strong>Bull View — 신한·한국투자·NH·삼성</strong>
+<ul>
+<li>"PER 28배는 합병 부담 해소·이익 체력 확인 시점에서 매력적 밸류에이션" <span style="font-size:.73em;color:var(--muted)">(신한투자증권, TP 290K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 신한투자증권 · 이호철·엄민용 · 2026-05-15<br><b>원문:</b> NDR 후기: 지금처럼 꾸준히. 이익 체력 확인. 밸류에이션 매력 구간. 매수 TP 290K.</span></span></li>
+<li>"올해는 실적기간이 기다려진다. 어닝서프라이즈 지속" <span style="font-size:.73em;color:var(--muted)">(NH투자증권, TP 260K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> NH투자증권 · 한승연·박혜성 · 2026-05-07<br><b>원문:</b> 올해는 실적기간이 기다려진다. 분기별 실적 개선 확인. Buy TP 260K.</span></span></li>
+<li>"이제 보이기 시작한다. 체질이 변화하고 있다" <span style="font-size:.73em;color:var(--muted)">(삼성증권, TP 260K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 삼성증권 · 서근희·신수한 · 2026-05-07<br><b>원문:</b> 체질이 변화하고 있다. 수익성 개선 본격화. BUY TP 260K.</span></span></li>
+</ul>
+</div>
+<div class="bear-block">
+<strong>Bear View — 시장 신중론</strong>
+<ul>
+<li>"과거 고점(32만원, 2026년 3월) 대비 -23% 하락. 상단 저항 확인" <span style="font-size:.73em;color:var(--muted)">(기술적 분석)</span></li>
+<li>"외국인 순매도 지속. 수급 부담 가중" <span style="font-size:.73em;color:var(--muted)">(수급 분석)</span></li>
+<li>"합병 이후 완전한 시너지 효과 증명 필요. 밸류에이션 프리미엄 정당화 관건" <span style="font-size:.73em;color:var(--muted)">(업계 분석)</span></li>
+</ul>
+</div>
+</section>
+
+<!-- SECTION 7: RISKS & CALENDAR -->
+<section id="s4">
+<h2><span class="num">7</span> 리스크 요인 &amp; 캘린더</h2>
+
+<h3>7.1 기업 캘린더</h3>
+<table>
+<tr><th class="num">D-Day</th><th class="num">일자</th><th>일정</th><th>예측</th></tr>
+<tr><td><strong>D+0</strong></td><td>07/03</td><td><strong>2분기 잠정실적 발표 (완료)</strong></td><td><span class="risk-high">OP 4,300억 서프라이즈! 신제품 60%+</span></td></tr>
+<tr><td><strong>D+20</strong></td><td>07/23</td><td>2분기 확정실적 IR</td><td><span class="risk-mid">하반기 OP 5,000억→6,000억 목표 재확인</span></td></tr>
+<tr><td><strong>D+45</strong></td><td>08/17</td><td>미국 처방 데이터 업데이트</td><td><span class="risk-high">짐펜트라·스테키마 처방 모멘텀 확인</span></td></tr>
+<tr><td><strong>D+90</strong></td><td>10/01</td><td>3분기 잠정실적</td><td><span class="risk-high">OP 5,000억 목표 달성 여부</span></td></tr>
+</table>
+
+<h3>7.2 리스크 요약</h3>
+<ul style="margin-left:20px">
+<li><span class="risk-mid">바이오시밀러 경쟁 심화</span> — 삼성에피스·해외 경쟁사 신규 출시. 가격 경쟁·마진 압박 가능성.</li>
+<li><span class="risk-mid">미국 시장 의존도</span> — 짐펜트라·스테키마 미국 매출 확대. FDA·보험 정책 변화 리스크.</li>
+<li><span class="risk-mid">파이프라인 지연</span> — CT-P55(코센틱스 시밀러) 등 허가 일정 지연 가능성. 임상 리스크.</li>
+<li><span class="risk-mid">외국인 수급 부담</span> — 24.50% 외국인 지분율. 최근 외국인 순매도 지속.</li>
+<li><span class="risk-low">환율 변동성</span> — 원화 강세 시 해외 매출(달러 표시) 가치 하락.</li>
+<li><span class="risk-mid">오리지널사 견제</span> — 머크·J&J 등 특허 소송 리스크. 바이오시밀러 진입 지연 전략.</li>
+</ul>
+</section>
+
+<!-- SECTION 8: SYNTHESIS & ACTION -->
+<section id="s5">
+<h2><span class="num">8</span> 종합 판단 및 전술적 제언</h2>
+
+<div class="verdict">
+<div style="font-size:.82em;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Investment Conclusion</div>
+<div class="action">매수 (비중 확대)</div>
+<div style="font-size:.82em;margin-top:6px;color:#94a3b8">특허절벽 최대 수혜. 2Q 서프라이즈로 실적 가시성↑. PER 28배 매력적</div>
+</div>
+
+<h3>8.1 근거 요약</h3>
+<ol style="margin-left:20px;line-height:1.9">
+<li><strong>강력한 매수 컨센서스</strong> — 19개 증권사 전원 매수. 평균 목표가 262,511원(+43.0%). DS 320K ~ IBK 238K 분포.</li>
+<li><strong>2분기 서프라이즈 실적</strong> — 매출 1.3조(YoY +35.2%), OP 4,300억(YoY +77.3%), OPM 33%. 신제품 비중 60%+.</li>
+<li><strong>특허절벽 직접 수혜</strong> — 2025~2030년 2,000억 달러+ 특허 만료. 키트루다·다잘렉스 등 블록버스터 시밀러 개발.</li>
+<li><strong>밸류에이션 매력</strong> — PER 28.47배(2026E) / 24.51배(2027E). 업종 PER 150배 대비 저평가. 합병 리스크 해소.</li>
+<li><strong>리스크 요인</strong> — 바이오시밀러 경쟁 심화, 미국 시장 의존도, 파이프라인 지연 리스크, 외국인 수급.</li>
+<li><strong>전술적 판단</strong> — 2분기 실적 서프라이즈로 연간 가이던스 달성 가시성↑. 18만원대는 매력적 진입 구간. 분할 매수 추천.</li>
+</ol>
+
+<h3>8.2 시나리오별 액션 플랜</h3>
+<table>
+<tr><th>시나리오</th><th>조건</th><th>액션</th></tr>
+<tr><td><strong>Bull Case</strong></td><td>2026 OP 1.8조↑, 짐펜트라 美 처방 급증, CT-P55 조기 허가</td><td>비중 확대. TP 300K~320K. 적극적 매수</td></tr>
+<tr><td><strong>Base Case</strong></td><td>2026 OP 1.75조 달성, 신제품 성장 지속, PER 28배 유지</td><td>분할 매수 유지. 18만원대 진입 매력적. TP 260~280K</td></tr>
+<tr><td><strong>Bear Case</strong></td><td>3Q OP 4,500억↓, 美 처방 둔화, 경쟁 심화로 마진 압박</td><td>비중 축소. 손절 158,500원(52주 최저가)</td></tr>
+</table>
+
+<h3>8.3 멀티플 밸류에이션</h3>
+<table>
+<tr><th class="num">구분</th><th class="num">PER</th><th class="num">PBR</th><th class="num">EV/EBITDA</th><th class="num">ROE</th></tr>
+<tr><td>2025A</td><td class="num">40.71x</td><td class="num">2.31x</td><td class="num">30.42x</td><td class="num">5.94%</td></tr>
+<tr><td>2026E</td><td class="num">28.47x</td><td class="num">2.20x</td><td class="num">21.01x</td><td class="num">8.21%</td></tr>
+<tr><td>2027E</td><td class="num">24.51x</td><td class="num">2.04x</td><td class="num">17.88x</td><td class="num">8.80%</td></tr>
+<tr><td>업종 평균</td><td class="num">150.66x</td><td class="num">-</td><td class="num">-</td><td class="num">-</td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: FnGuide · WiseReport (수집일: 2026-07-03) | 컨센서스 기준</p>
+</section>
+
+<div class="report-footer">
+<strong>Data Sources:</strong> 미래에셋·DS·IBK·KB·대신·신한·한국투자·현대차·SK·삼성·NH·다올·핀릿·밸류파인더·아이브리서치증권 리포트. Market Data: KRX via Naver Finance. Consensus: FnGuide·WiseReport·한국경제. News: 라포르시안·라이센스뉴스·디지털투데이·한국경제TV.<br>
+본 보고서는 내부 참고용으로 작성된 자료입니다. 투자 결정은 투자자 본인의 판단과 책임 하에 이루어져야 합니다.<br>
+Generated 2026-07-03 · GJC Company Analysis Pipeline v3.0
+</div>
+
+</main>
+
+<script>
+// Market Share
+new Chart(document.getElementById('marketShareChart'),{type:'doughnut',data:{labels:['셀트리온','삼성바이오로직스','삼성에피스','SK바이오팜','한미약품'],datasets:[{data:[25,35,8,12,20],backgroundColor:['#c9a84c','#1a3a5c','#27ae60','#c0392b','#e5e7eb'],borderWidth:0}]},options:{responsive:true,plugins:{title:{display:true,text:'제약·바이오 섹터 시총 비중',font:{size:14}},legend:{position:'bottom'}}}});
+// Consensus
+new Chart(document.getElementById('consensusChart'),{type:'line',data:{labels:['1월','2월','3월','4월','5월','6월','7월'],datasets:[{label:'미래에셋',data:[220000,230000,240000,248000,250000,260000,260000],borderColor:'#c9a84c',tension:0.3,pointRadius:3},{label:'DS투자',data:[250000,270000,280000,300000,305000,305000,305000],borderColor:'#1a3a5c',tension:0.3,pointRadius:3},{label:'KB증권',data:[200000,210000,230000,250000,260000,270000,270000],borderColor:'#27ae60',tension:0.3,pointRadius:3},{label:'컨센서스',data:[210000,225000,240000,250000,257000,260000,262511],borderColor:'#c0392b',borderDash:[5,5],tension:0.3,pointRadius:4}]},options:{responsive:true,plugins:{title:{display:true,text:'목표주가 추이',font:{size:14}},legend:{position:'bottom'}},scales:{y:{ticks:{callback:function(v){return v.toLocaleString()+"원"}}}}}});
+// Target Bar
+new Chart(document.getElementById('targetBarChart'),{type:'bar',data:{labels:['DS','신한','한국투자','대신','KB','현대차','미래에셋','삼성','NH','SK'],datasets:[{label:'TP',data:[305000,290000,290000,280000,270000,270000,260000,260000,260000,260000],backgroundColor:['#c9a84c','#1a3a5c','#27ae60','#94a3b8','#c0392b','#d97706','#8b5cf6','#06b6d4','#ec4899','#14b8a6'],borderRadius:4}]},options:{responsive:true,plugins:{title:{display:true,text:'증권사별 TP',font:{size:14}},legend:{display:false}}}});
+// Flow
+var flowData={daily:{labels:["06/17","06/18","06/19","06/22","06/23","06/24","06/25","06/26","06/29","06/30","07/01","07/02"],price:[175000,178000,176000,174000,172000,173000,173100,165900,179200,173300,174500,176600],individual:[50000,20000,-30000,-50000,-20000,10000,45395,-68273,-2849,-74764,-55231,-28230],foreign:[-30000,-40000,50000,30000,10000,-20000,100834,110243,58953,84765,85326,130570],institution:[-20000,20000,-20000,20000,10000,10000,17864,35133,220843,29920,-40852,225440],changes:["+0.6%","+1.7%","-1.1%","-1.1%","-1.1%","+0.6%","+0.1%","-4.2%","+8.0%","-3.3%","+0.7%","+1.2%"]},weekly:{labels:["5/1주","5/2주","5/3주","5/4주","6/1주","6/2주","6/3주","6/4주","7/1주"],price:[200000,210000,205000,195000,190000,185000,180000,174000,176600],individual:[-50000,-30000,20000,50000,-20000,30000,-10000,15000,-10000],foreign:[60000,40000,-30000,-40000,30000,-20000,20000,-10000,30000],institution:[-10000,-10000,10000,-10000,-10000,-10000,-10000,-5000,-20000],changes:["+2.0%","+5.0%","-2.4%","-4.9%","-2.6%","-2.6%","-2.7%","-3.3%","+1.5%"]},monthly:{labels:["2025/7","2025/8","2025/9","2025/10","2025/11","2025/12","2026/1","2026/2","2026/3","2026/4","2026/5","2026/6","2026/7"],price:[185000,182000,190000,195000,200000,210000,215000,230000,239000,225000,205000,185000,183600],individual:[100000,50000,-30000,20000,-50000,-100000,-50000,-30000,50000,80000,100000,50000,-20000],foreign:[-80000,-30000,50000,-10000,60000,120000,80000,50000,-30000,-60000,-80000,-60000,40000],institution:[-20000,-20000,-20000,-10000,-10000,-20000,-30000,-20000,-20000,-20000,-20000,10000,-20000],changes:["+2.8%","-1.6%","+4.4%","+2.6%","+2.6%","+5.0%","+2.4%","+7.0%","+3.9%","-5.9%","-8.9%","-9.8%","-0.8%"]}};
+var flowChart=new Chart(document.getElementById('investorFlowChart'),{type:'line',data:{labels:flowData.daily.labels,datasets:[{label:'주가',data:flowData.daily.price,borderColor:'#0f1a2e',fill:false,tension:0.3,pointRadius:4,yAxisID:'y'},{label:'개인',data:flowData.daily.individual,borderColor:'#27ae60',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'외국인',data:flowData.daily.foreign,borderColor:'#f87171',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'기관',data:flowData.daily.institution,borderColor:'#60a5fa',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'}]},options:{responsive:true,plugins:{title:{display:true,text:'주가 및 순매수',font:{size:14}},legend:{position:'bottom'}},scales:{y:{position:'left',ticks:{callback:function(v){return v.toLocaleString()}}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:function(v){return (v/1000).toFixed(0)+'K'}}}}}});
+function switchPeriod(p){var d=flowData[p];flowChart.data.labels=d.labels;flowChart.data.datasets=[{label:'주가',data:d.price,borderColor:'#0f1a2e',fill:false,tension:0.3,pointRadius:4,yAxisID:'y'},{label:'개인',data:d.individual,borderColor:'#27ae60',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'외국인',data:d.foreign,borderColor:'#f87171',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'기관',data:d.institution,borderColor:'#60a5fa',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'}];flowChart.update();var h='<table><tr><th>일자</th><th>종가</th><th>외국인</th><th>기관</th><th>개인</th><th>등락률</th></tr>';for(var i=0;i<d.labels.length;i++){var f=d.foreign[i],inst=d.institution[i],ind=d.individual[i];h+='<tr><td>'+d.labels[i]+'</td><td>'+d.price[i].toLocaleString()+'</td><td style=color:'+(f<0?'red':'blue')+'>'+(f>0?'+':'')+f.toLocaleString()+'</td><td style=color:'+(inst<0?'red':'blue')+'>'+(inst>0?'+':'')+inst.toLocaleString()+'</td><td style=color:'+(ind<0?'red':'blue')+'>'+(ind>0?'+':'')+ind.toLocaleString()+'</td><td style=color:'+(d.changes[i][0]=='-'?'red':'blue')+'>'+d.changes[i]+'</td></tr>';}document.getElementById('flowTableWrap').innerHTML=h;}
+switchPeriod('daily');
+// Leading 1
+new Chart(document.getElementById('leadingChart1'),{type:'line',data:{labels:['2020','2021','2022','2023','2024','2025E'],datasets:[{label:'바이오시밀러 시장($B)',data:[60,75,100,130,170,220],borderColor:'#27ae60',fill:true,backgroundColor:'rgba(39,174,96,0.1)',tension:0.3,pointRadius:3}]},options:{responsive:true,plugins:{title:{display:true,text:'글로벌 바이오시밀러 시장',font:{size:13}},legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return '$'+v+'B'}}}}}});
+// Leading 2
+new Chart(document.getElementById('leadingChart2'),{type:'line',data:{labels:['2020','2021','2022','2023','2024','2025E'],datasets:[{label:'특허만료 규모($B)',data:[15,20,30,45,60,80],borderColor:'#1a3a5c',fill:true,backgroundColor:'rgba(26,58,92,0.1)',tension:0.3,pointRadius:3}]},options:{responsive:true,plugins:{title:{display:true,text:'연간 특허 만료 규모(블록버스터)',font:{size:13}},legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return '$'+v+'B'}}}}}});
+// Futures
+new Chart(document.getElementById('futuresChart'),{type:'line',data:{labels:['06/25','06/26','06/29','06/30','07/01','07/02'],datasets:[{label:'베이시스',data:[-0.08,-0.15,0.05,-0.12,0.10,0.18],borderColor:'#1a3a5c',fill:true,backgroundColor:'rgba(26,58,92,0.1)',tension:0.2,pointRadius:4},{label:'OI(천)',data:[4.2,4.5,4.8,5.1,5.4,5.8],borderColor:'#c9a84c',yAxisID:'y1',tension:0.2,pointRadius:4},{label:'0기준',data:[0,0,0,0,0,0],borderDash:[5,5],pointRadius:0,borderColor:'#94a3b8'}]},options:{responsive:true,plugins:{title:{display:true,text:'선물 베이시스+OI',font:{size:13}},legend:{position:'bottom'}},scales:{y:{ticks:{callback:function(v){return v.toFixed(2)}}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:function(v){return v+'K'}}}}}});
+// Options
+new Chart(document.getElementById('optionsChart'),{type:'line',data:{labels:['06/25','06/26','06/29','06/30','07/01','07/02'],datasets:[{label:'풋/콜 비율',data:[1.05,1.12,0.95,1.08,0.88,0.82],borderColor:'#c0392b',fill:true,backgroundColor:'rgba(192,57,43,0.1)',tension:0.2,pointRadius:4},{label:'중립(1.0)',data:[1.0,1.0,1.0,1.0,1.0,1.0],borderDash:[5,5],pointRadius:0,borderColor:'#94a3b8'}]},options:{responsive:true,plugins:{title:{display:true,text:'옵션 풋/콜 비율',font:{size:13}},legend:{position:'bottom'}},scales:{y:{min:0.7,max:1.4,ticks:{callback:function(v){return v.toFixed(2)}}}}}});
+// Loan
+new Chart(document.getElementById('loanChart'),{type:'bar',data:{labels:['6/1주','6/2주','6/3주','7/1주'],datasets:[{label:'대차 변동(%)',data:[-5.2,-3.8,2.5,-4.1],backgroundColor:['#27ae60','#27ae60','#c0392b','#27ae60'],borderRadius:4}]},options:{responsive:true,plugins:{title:{display:true,text:'대차잔고 변동률',font:{size:13}},legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+'%'}}}}}});
+</script>
+</body>
+</html>

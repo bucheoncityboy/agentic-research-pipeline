@@ -1,107 +1,80 @@
-# Company Analysis — Agent-Native Equity Research Pipeline
+# Agentic Research Pipeline
 
-**AI Agent가 직접 수집·분석·작성하는 한국 상장사 기업분석 리포트 시스템 (v3.0)**
+> **One-Line Pitch:** AI Agent가 실시간 수집·분석·작성하는 한국 상장사 기업분석 리포트 자동화 파이프라인 (v3.0, Agent-Native)
 
-> Python 파이프라인 완전 제거. Agent가 `web_search` + `browser`로 실시간 데이터를 수집하고, 템플릿 치환으로 **자체 검증된 HTML 리포트**를 생성.
+## 📌 Executive Summary
+
+| Category | Details |
+| :--- | :--- |
+| **Core Objective** | 수작업 기업분석 리포트 병목 제거 + LLM 환각 방지. "AI Agent가 증권사 리서치 애널리스트 수준의 리포트를 직접 작성할 수 있는가" 검증 |
+| **Key Architecture** | Agent-Native: `web_search` + `browser` 실시간 데이터 수집 → Phase 0~5 상태 머신 → 템플릿 치환 HTML 리포트 → 자가 검증 게이트. v2 Python 파이프라인(G1~G4 게이트 스크립트)에서 진화 |
+| **Performance** | 실제 생성 결과물 6건 (HTML 5 + PDF 2), 커버리지 19개 종목, 섹터 지식베이스 7종, 전 섹션 데이터 출처·수집일 명시 |
+| **Tech Stack** | AI Agent (GJC), `web_search`/`browser`, PyKRX/DART API, HTML/CSS 템플릿 엔진, Python (v2 하이브리드) |
 
 ---
 
-## Showcase: 실제 생성 결과물 (2026년 6~7월)
+## 🏗️ Architecture
 
-| 기업 | 종목코드 | 리포트 일자 | 크기 | 핵심 포인트 |
-|------|----------|-------------|------|-------------|
-| **삼성전자** | 005930 | 2026-07-08 | 63.7 KB | 현재가 267,000 / TP 508,958 (+90.6%) / 2Q OP 89.4조 (+1,810% YoY) |
-| **두산에너빌리티** | 034020 | 2026-07-03 | 52.8 KB | TP 150,200 (+74.7%) / 원전+해상풍력 성장 |
-| **셀트리온** | 068270 | 2026-07-03 | 52.4 KB | 바이오시밀러 글로벌 확대 |
-| **대한전선** | 001440 | 2026-07-02 | 52.3 KB | 북미 전력망 수혜 |
-
-**예시 파일 위치**: `examples/`
-
-### 삼성전자 2026-07-08 Executive Summary (실제 출력)
+![Architecture v3.0](docs/company_analysis_architecture_v3.png)
 
 ```
-현재가          267,000     장중 −29,000 (−9.80%)
-컨센서스 목표가 508,958     업사이드 +90.6%
-2Q26 영업이익   89.4조       사상 최대 (+1,810% YoY)
-최종 판단       비중 확대    분할 매수 권장
+입력 (기업명 / 종목코드)
+  │
+  ▼
+Phase 0  기업 식별·섹터 분류          web_search
+Phase 1  핵심 데이터 직접 수집        web_search + browser (주가/재무/RSI/VKOSPI)
+Phase 2  경쟁사·산업·뉴스 수집        web_search + 섹터 지식베이스 7종
+Phase 3  Bull/Bear 쟁점 직접 분석     LLM 추론 (수치·출처 필수, 금지어 규칙)
+Phase 4  HTML 리포트 생성            read(template.html) → write({{PLACEHOLDER}} 치환)
+Phase 5  Gate: 자가 검증 체크리스트    생성물 검증 (누락·오류·출처 점검)
+  │
+  ▼
+results/기업명_종목코드/기업명_종목코드_YYYYMMDD.html
 ```
 
-**Verdict 예시** (리포트 하단):
-> **Investment Conclusion — 비중 확대 (분할 매수 권장)**
-> HBM3E 12단 퀄 통과, 2Q 실적 서프라이즈, 컨센서스 상향 여력 +90% 구간에서 적극적 비중 확대를 제안.
+**Gate 체계 (환각 방지 핵심):**
+- v2: Python `gate1~4.py` Fail-Closed 게이트 → v3: **에이전트 자가 검증 체크리스트**로 이관 (검증 로직은 그대로, 실행 주체만 변경)
+- 모든 수치는 **출처 + 수집일(YYYY-MM-DD)** 필수 기록, 미확보 시 `"데이터 미확보 (수집일 시도: 사유)"` 명시 — **추측·하드코딩 금지**
+- Bull/Bear 리포트는 증권사 출처를 동반한 **사실 기반 논쟁** 형태 (의견·전망 금지어 규칙)
+
+## 📊 Key Results & Validation — 실제 생성 결과물
+
+| 기업 | 종목코드 | 리포트 | 형식 |
+|------|----------|--------|------|
+| NVIDIA | NVDA | 2026-08-06 | PDF (`sample_output/`) |
+| 삼성전자 | 005930 | 2026-07-08 | HTML + PDF |
+| 셀트리온 | 068270 | 2026-07-03 | HTML + PDF |
+| 두산에너빌리티 | 034020 | 2026-07-03 | HTML (`examples/`) |
+| 대한전선 | 001440 | 2026-07-02 | HTML (`examples/`) |
+
+**커버리지 (2026-06~07 기준, 19종목):** 삼성전자, SK하이닉스, 삼성SDI, 현대모비스, 기아, 두산에너빌리티, 대한전선, 대한광통신, 셀트리온, JYP엔터테인먼트, 카카오, 한미반도체, POSCO홀딩스, 한화오션, LG전자, NH투자증권, 한온시스템, LG CNS, NVIDIA
+
+**리포트 구조 (8개 메인 섹션 · 14개 서브 섹션):**
+
+| # | 섹션 | 내용 |
+|---|------|------|
+| 0 | Executive Summary | 핵심 지표 대시보드 |
+| 1 | 정량적 컨센서스 및 이격도 분석 | 20개 하우스 수치 평균·이격도 + 추이 차트 + 주가/투자자 매매동향 |
+| 1.8 | 선행데이터 분석 | 섹터 선행지표 (VKOSPI, 환율 등) |
+| 1.9 | 파생상품·단기 수급 모니터 | 선물 베이시스/OI, 옵션 풋콜, 대차잔고 |
+| 2 | 시장의 지배적 서사 | 증권사 공통 투자포인트 |
+| 3 | 하우스별 핵심 이견·논쟁점 | Bull vs Bear 수치 기반 대치 분석 |
+| 4 | 리스크 요인 & 캘린더 | 실적 발표, 파생 청산, 리스크 요약 |
+| 5 | 종합 판단 및 전술적 제언 | Investment Conclusion |
 
 ---
 
-## 왜 이 시스템인가
-
-- **Agent-Native**: LLM Agent가 데이터 수집 → Bull/Bear 쟁점 분석 → HTML 생성까지 **직접** 수행
-- **Reproducible Design System**: `template.html` + `{{PLACEHOLDER}}` 체계로 매 리포트 일관된 레이아웃·차트·색상
-- **Sector Knowledge**: 10개 섹터별 선행지표·경쟁사·시장규모 사전 정의 (반도체·2차전지·전력기기·바이오 등)
-- **Self-Gate**: 생성 후 Agent가 직접 Gate 체크리스트로 검증 (데이터 누락, 링크 404, 플레이스홀더 잔존 방지)
-
----
-
-## Pipeline (5단계)
-
-| Phase | 수행 내용 | 도구 |
-|-------|-----------|------|
-| 0 | 기업명/코드 검증 + 섹터 분류 | web_search |
-| 1 | 주가·재무·사업부문·RSI·파생상품(PyKRX) 수집 | web_search, browser |
-| 2 | 경쟁사·시장규모·선행지표·뉴스 수집 | web_search + sector/*.md 참조 |
-| 3 | Bull Case / Bear Case 논리 구성 (근거+출처 필수) | LLM 직접 추론 |
-| 4 | template.html 로드 → {{PLACEHOLDER}} 치환 → HTML write | read / write |
-| 5 | Gate 자가검증 (누락 데이터, URL, 구조) | read 생성물 |
-
----
-
-## 산출물 특징
-
-- **독립 실행 HTML** (Chart.js CDN, 외부 의존 최소)
-- **4메트릭 Executive Summary** + 컨센서스 차트 + 수급/파생 차트
-- **Bull/Bear 블록** (녹색/적색 테두리, 출처 명기)
-- **뉴스 4~5건** (제목·언론사·일자·원본 URL)
-- **Risk & Calendar** + **Synthesis & Action**
-- **반응형 + 다크 네이비 디자인 시스템** (Pretendard + CSS 변수)
-
----
-
-## 커버리지 (2026-06~07 기준)
-
-- 삼성전자, SK하이닉스, 삼성SDI, 현대모비스, 기아
-- 두산에너빌리티, 대한전선, 대한광통신
-- 셀트리온, JYP엔터테인먼트, 카카오, 한미반도체
-- POSCO홀딩스, 한화오션, LG전자, NH투자증권, 한온시스템, LG CNS 등
-
----
-
-## 기술 스택 / 아키텍처
-
-- **Agent Runtime**: GJC (가재 코드) — `web_search`, `browser`, `read`, `write`
-- **Template Engine**: 수동 {{PLACEHOLDER}} 치환 (Python 불필요)
-- **지식 베이스**: `.gjc/skills/company-analysis/knowledge/sectors/*.md`
-- **디자인**: 단일 `template.html` (재현성 보장)
-
-상세 스펙: `docs/SKILL.md`
-
----
-
-## 사용 예시 (개념)
+## 🛠️ 저장소 구조
 
 ```
-입력: "삼성전자" 또는 "005930"
-→ Phase 0~5 자동 실행
-→ results/기업분석/삼성전자_005930/삼성전자_005930_20260708.html 생성
+docs/
+  SKILL.md          # 실행 스펙 (Phase 0~5, 수집 규칙, 금지어)
+  template.html     # 단일 디자인 시스템 (재현성 보장)
+sample_output/      # 자동 생성 리포트 샘플 (PDF 2 + HTML 5)
+examples/           # 추가 생성 결과물
 ```
 
----
-
-## 포트폴리오 노트
-
-이 저장소는 **"AI Agent가 증권사 리서치 애널리스트 수준의 리포트를 직접 작성할 수 있는가"**를 검증하기 위해 만들어졌습니다.
-
-- 실제 생성된 HTML 4건을 예시로 포함
-- 모든 데이터는 Agent가 실시간 수집 (추측·하드코딩 없음)
-- Bull/Bear는 수치와 출처를 동반한 **사실 기반 논쟁** 형태로 작성
+**상세 스펙:** `docs/SKILL.md` — Phase별 수집 항목, 수집 규칙, Bull/Bear 형식, 출처 표기 규칙 전체 문서화
 
 ---
 

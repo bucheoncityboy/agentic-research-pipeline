@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[CA] 두산에너빌리티 (034020) | Company Analysis v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root{--navy:#0f1a2e;--blue:#1a3a5c;--accent:#c9a84c;--red:#c0392b;--green:#27ae60;--bg:#fafaf9;--card:#fff;--text:#1a1a1a;--muted:#6b7280;--border:#e5e7eb;--bull-bg:#e8f5e9;--bear-bg:#fbe9e7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Pretendard,Malgun Gothic,Apple SD Gothic Neo,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;display:flex}
+nav{width:220px;background:var(--navy);color:#fff;padding:28px 18px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+nav a{display:block;color:#94a3b8;text-decoration:none;padding:5px 0;font-size:.82em;border-left:2px solid transparent;padding-left:10px;transition:.1s}
+nav a:hover{color:#fff;border-left-color:var(--accent)}
+nav .logo{font-size:1em;font-weight:700;margin-bottom:28px;color:#fff}
+nav .logo span{color:var(--accent)}
+main{flex:1;min-width:0;padding:36px 44px}
+section{margin-bottom:32px}
+section h2{font-size:1.15em;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+section h2 .num{background:var(--navy);color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8em;flex-shrink:0}
+section h3{font-size:.95em;font-weight:600;color:var(--blue);margin:18px 0 8px}
+table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:.85em}
+th{background:var(--navy);color:#fff;padding:8px 10px;font-size:.78em;text-align:left;font-weight:600}
+td{padding:7px 10px;border-bottom:1px solid var(--border)}
+tr:nth-child(even) td{background:#f8fafc}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.up{color:#f87171}.down{color:#60a5fa}
+.badge-buy{background:#dcfce7;color:#166534;padding:1px 7px;border-radius:3px;font-weight:600;font-size:.82em}
+.badge-event{background:#dc2626;color:#fff;padding:1px 6px;border-radius:3px;font-size:.72em;font-weight:700}
+.bull-block{background:#e8f5e9;border-left:4px solid var(--green);padding:10px 14px;margin:6px 0;border-radius:0 4px 4px 0}
+.bear-block{background:#fbe9e7;border-left:4px solid var(--red);padding:10px 14px;margin:6px 0;border-radius:0 4px 4px 0}
+.bull-block ul,.bear-block ul{margin:6px 0 0 18px}
+.verdict{background:var(--navy);color:#fff;padding:18px 22px;border-radius:6px;text-align:center;margin:14px 0}
+.verdict .action{font-size:1.3em;font-weight:800;color:var(--accent)}
+.chart-wrap{background:var(--card);border:1px solid var(--border);padding:16px;border-radius:6px;margin:12px 0}
+.chart-wrap canvas{width:100%!important;max-height:380px}
+.chart-wrap-sm{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:6px;margin:12px 0}
+.chart-wrap-sm canvas{width:100%!important;max-height:240px}
+.gauge-card{background:var(--navy);color:#fff;padding:10px 14px;border-radius:8px;text-align:center;min-width:120px}
+.exec-summary{background:var(--navy);color:#fff;padding:18px 22px;border-radius:6px;margin-bottom:28px}
+.exec-summary h3{font-size:.82em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px 0}
+.exec-summary .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.exec-summary .metric .label{font-size:.65em;color:#94a3b8;text-transform:uppercase}
+.exec-summary .metric .value{font-size:1.2em;font-weight:700}
+.exec-summary .metric .change{font-size:.75em}
+.news-card{display:flex;flex-direction:column;padding:10px 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;transition:background .1s}
+.news-card:hover{background:#f8fafc}
+.news-card .meta{font-size:.72em;color:var(--muted);margin-bottom:3px}
+.news-card .headline{font-size:.85em;font-weight:500}
+.period-tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.period-tab{padding:3px 12px;border-radius:4px;font-size:.76em;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:.1s}
+.period-tab:hover{border-color:var(--accent);color:var(--navy)}
+.period-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.risk-high{color:var(--red);font-weight:700}.risk-mid{color:#d97706;font-weight:700}
+.dispersion-high{color:var(--red);font-weight:700}
+.report-footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--border);color:var(--muted);font-size:.72em;line-height:1.6}
+.flash-alert{background:linear-gradient(135deg,#7f1d1d,#991b1b);color:#fff;padding:16px 20px;border-radius:6px;margin-bottom:32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}.flash-icon{font-size:2em;line-height:1}.flash-text{flex:1}.flash-text strong{font-size:1.1em}.flash-text .sub{font-size:.85em;color:#fca5a5;margin-top:4px}.report-header{margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid var(--navy)}.tag{font-size:.75em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:600}.sub{color:var(--muted);font-size:.9em}.neutral{color:#94a3b8}.risk-low{color:var(--green);font-weight:700}.gauge-row{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}.g-title{font-size:.65em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.g-bar-wrap{width:100%;background:rgba(255,255,255,0.1);border-radius:4px;height:22px;position:relative;overflow:hidden;margin:8px 0}.g-bar-fill{height:100%;border-radius:4px;transition:width .5s}.g-labels{display:flex;justify-content:space-between;font-size:.55em;color:#64748b;margin-top:2px}.g-value{font-size:1.6em;font-weight:800;line-height:1}.g-label{font-size:.7em;opacity:.8}.g-src{font-size:.5em;color:#64748b;margin-top:6px}.analyst-dist{display:flex;gap:4px;margin:12px 0;height:24px}.analyst-bar{height:100%;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.65em;font-weight:700;color:#fff;transition:width .5s}.badge-ai{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:3px;font-size:.75em;font-weight:600;margin-left:8px}.badge-hold{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:3px;font-weight:600;font-size:.85em}.badge-new{background:#3b82f6;color:#fff;padding:2px 8px;border-radius:3px;font-size:.7em;font-weight:700;margin-left:8px}.fear-gauge{transition:background .3s}@media(max-width:768px){body{flex-direction:column}nav{width:100%;height:auto;position:static;padding:16px}main{padding:16px}.exec-summary .metrics{grid-template-columns:repeat(2,1fr)}}
+.src-tip{position:relative;display:inline;cursor:pointer}.src-tip .src-btn{font-size:.7em;color:var(--muted);margin-left:3px;border-bottom:1px dotted var(--muted);cursor:pointer}.src-tip .src-btn:hover{color:var(--accent)}.src-tip .src-box{display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:var(--navy);color:#e2e8f0;padding:10px 12px;border-radius:6px;font-size:.72em;line-height:1.5;white-space:pre-line;width:300px;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.35);pointer-events:none}.src-tip .src-box::after{content:;position:absolute;top:100%;left:16px;border:6px solid transparent;border-top-color:var(--navy)}.src-tip:hover .src-box{display:block}</style>
+</head>
+<body>
+<nav>
+<div class="logo">Company <span>Analysis</span></div>
+<a href="#s0">1. Executive Summary</a>
+<a href="#s0e">2. Sector Alert</a>
+<a href="#sa">3. Company Overview</a>
+<a href="#sa2">3.1 Sector Positioning</a>
+<a href="#s1">4. Quant Dashboard</a>
+<a href="#s1c">4.1 Consensus Chart</a>
+<a href="#s1a">4.2 Price & Flow</a>
+<a href="#s1l">4.3 Leading Indicators</a>
+<a href="#s1d">4.4 Derivatives & Flows</a>
+<a href="#s2">5. Market Narrative</a>
+<a href="#s2n">5.1 News Monitor</a>
+<a href="#s3">6. Core Debates</a>
+<a href="#s4">7. Risks & Calendar</a>
+<a href="#s5">8. Synthesis & Action</a>
+<div style="margin-top:auto;padding-top:20px;font-size:.65em;color:#64748b;line-height:1.5">GJC Pipeline v3.0<br>2026-07-03</div>
+</nav>
+<main>
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;border-bottom:3px solid var(--navy);padding-bottom:16px">
+<div><h1>두산에너빌리티 <span style="font-weight:400;color:var(--muted)">034020</span></h1>
+<div style="color:var(--muted)">2026-07-03 | NH·키움·신한·SK·삼성·KB·IBK·하나 등 15개사 통합</div></div>
+<div style="display:flex;gap:10px">
+<div class="gauge-card"><div style="color:var(--accent);font-size:.55em;text-transform:uppercase;letter-spacing:1px">RSI(14)</div>
+<div style="background:rgba(255,255,255,0.1);border-radius:4px;height:16px;margin:4px 0"><div style="width:38%;background:#60a5fa;height:100%;border-radius:4px"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:.48em;color:#64748b"><span>과매도(0)</span><span>과매수(100)</span></div>
+<div style="font-size:1.3em;font-weight:800;color:#60a5fa;line-height:1.2">38.2</div>
+<div style="font-size:.55em;color:#94a3b8">단기 과매도 구간 · investing.com</div></div>
+<div class="gauge-card"><div style="color:var(--accent);font-size:.55em;text-transform:uppercase;letter-spacing:1px">RATING</div>
+<div style="font-size:1.3em;font-weight:800;color:var(--accent);line-height:1.2;margin-top:8px">4.00</div>
+<div style="font-size:.55em;color:#94a3b8">/ 5 매수 · 15개사</div></div>
+</div></div>
+
+<!-- SECTION 1: EXECUTIVE SUMMARY -->
+<section id="s0">
+<div class="exec-summary">
+<h3>Executive Summary</h3>
+<div class="metrics">
+<div class="metric"><div class="label">현재가</div><div class="value" style="color:#f87171">86,000</div><div class="change" style="color:#f87171">전일 -2,500 (-2.82%)</div></div>
+<div class="metric"><div class="label">컨센서스 목표가</div><div class="value">150,200</div><div class="change" style="color:#27ae60">업사이드 +74.7%</div></div>
+<div class="metric"><div class="label">영업이익 (2026E)</div><div class="value" style="color:#27ae60">1.12조</div><div class="change">YoY +46.8%</div></div>
+<div class="metric"><div class="label">최종 판단</div><div class="value" style="color:var(--accent)">매수 (비중 확대)</div><div class="change">원전·가스터빈 구조적 성장</div></div>
+</div></div></section>
+
+<!-- SECTION 2: SECTOR ALERT -->
+<section id="s0e">
+<h2><span class="num">2</span> 에너지설비 섹터 현황 <span class="badge-event">HOT</span></h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+글로벌 원전 르네상스 + AI 데이터센터 전력수요 폭증 = 발전설비 슈퍼사이클 진입</blockquote>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+<div style="background:var(--bull-bg);border-left:4px solid var(--green);padding:10px 14px;border-radius:4px">
+<strong style="color:var(--green);">가스터빈 수주 폭발</strong>
+<ul style="margin:6px 0 0 16px;font-size:.83em">
+<li><strong>1Q26 가스터빈 9기 수주</strong> (연간 30기+ 목표)</li>
+<li>북미 빅테크 Data Center向 수주 본격화</li>
+<li>복합화력·열병합 수요 증가세</li></ul></div>
+<div style="background:var(--bull-bg);border-left:4px solid var(--green);padding:10px 14px;border-radius:4px">
+<strong style="color:var(--green);">원전·SMR 모멘텀</strong>
+<ul style="margin:6px 0 0 16px;font-size:.83em">
+<li><strong>체코 원전 24조원 수주</strong> (역대 최대)</li>
+<li>폴란드·사우디·美 원전 추가 입찰 예정</li>
+<li>SMR 전용공장 착공 (2028년 매출 목표)</li></ul></div>
+</div>
+</section>
+
+<!-- SECTION 3: COMPANY OVERVIEW -->
+<section id="sa">
+<h2><span class="num">3</span> 기업 개요 &amp; 경쟁 구도</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+섹터: <strong>기계·에너지설비</strong> | 시장 규모: 약 6,000억 달러(글로벌 발전설비, 2025) | CAGR: 5~8%</blockquote>
+
+<h3>기업 프로필</h3>
+<table>
+<tr><th>항목</th><th>내용</th></tr>
+<tr><td><strong>기업명</strong></td><td>두산에너빌리티 (034020) · KOSPI</td></tr>
+<tr><td><strong>설립</strong></td><td>1962년 두산중공업 설립, 2021년 두산에너빌리티로 사명 변경</td></tr>
+<tr><td><strong>최대주주</strong></td><td>두산 외 28인 (30.68%), 국민연금 (7.86%)</td></tr>
+<tr><td><strong>시가총액</strong></td><td>54조 4,477억원 (코스피 15위)</td></tr>
+<tr><td><strong>발행주식수</strong></td><td>640,561,146주 (액면가 5,000원)</td></tr>
+<tr><td><strong>외국인 지분율</strong></td><td>24.16%</td></tr>
+<tr><td><strong>52주 최고/최저</strong></td><td>139,200원 / 51,100원 (Beta: 0.74)</td></tr>
+<tr><td><strong>신용등급</strong></td><td>KR A- / NICE A- (2026년 9년 만에 복귀)</td></tr>
+</table>
+
+<h3>사업 부문</h3>
+<table>
+<tr><th>사업 부문</th><th>주요 제품/서비스</th><th class="num">매출 비중</th></tr>
+<tr><td>에너빌리티 (발전설비)</td><td>원자력 발전 주기기(원자로·증기발생기·터빈), 대형 가스터빈, 화력발전소 기자재, SMR, 해상풍력, 수소 설비. 국내 유일 대형 가스터빈·원전 OEM.</td><td class="num">약 42%</td></tr>
+<tr><td>두산밥캣</td><td>소형 건설장비·컴팩트 장비 글로벌 1위. 스키드로더·소형굴삭기·트랙터. 북미·유럽 시장 중심.</td><td class="num">약 48%</td></tr>
+<tr><td>두산퓨얼셀 · 기타</td><td>수소연료전지(PAFC·SOFC) 제조·발전소 운영, 신재생에너지 솔루션.</td><td class="num">약 10%</td></tr>
+</table>
+
+<h3>경쟁사 및 시장 비교</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0">
+<div class="chart-wrap" style="margin:0"><canvas id="marketShareChart"></canvas></div>
+<div>
+<table style="margin:0">
+<tr><th>기업</th><th>시장 위치</th><th class="num">시가총액</th></tr>
+<tr><td><strong>두산에너빌리티</strong></td><td>국내 유일 원전·가스터빈 OEM</td><td class="num">54.4조</td></tr>
+<tr><td>두산밥캣</td><td>소형 건설장비 1위 (자회사)</td><td class="num">6.2조</td></tr>
+<tr><td>한전기술</td><td>원전 설계·엔지니어링</td><td class="num">3.5조</td></tr>
+<tr><td>삼성물산</td><td>종합 건설·플랜트 EPC</td><td class="num">32.1조</td></tr>
+</table>
+<p style="font-size:.78em;color:var(--muted);margin-top:6px">출처: Naver Finance 동종업종비교 (2026-07-03)</p>
+</div></div>
+
+<h3>최근 3개년 요약 재무 (연결)</h3>
+<table>
+<tr><th class="num">연도</th><th class="num">매출액</th><th class="num">영업이익</th><th class="num">영업이익률</th><th class="num">당기순이익(지배)</th></tr>
+<tr><td>2023</td><td class="num">17.59조</td><td class="num">1.47조</td><td class="num">8.34%</td><td class="num">556억</td></tr>
+<tr><td>2024</td><td class="num">16.23조</td><td class="num">1.02조</td><td class="num">6.27%</td><td class="num">1,114억</td></tr>
+<tr><td>2025</td><td class="num">17.06조</td><td class="num">7,627억</td><td class="num">4.47%</td><td class="num">848억</td></tr>
+<tr><td>2026E</td><td class="num">18.10조</td><td class="num">1.12조</td><td class="num">6.19%</td><td class="num">2,985억</td></tr>
+</table>
+<p style="font-size:.75em;color:var(--muted)">출처: FnGuide · WiseReport (연결 IFRS 기준, 수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 3.1: SECTOR POSITIONING -->
+<section id="sa2">
+<h2><span class="num">3.1</span> 섹터 내 입지 분석</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+기계·에너지설비 섹터 내 경쟁적 위치와 수익성 비교 (2026.03 분기 기준)</blockquote>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div>
+<h3>수익성 비교</h3>
+<table>
+<tr><th>기업</th><th class="num">영업이익률</th><th class="num">ROE</th><th class="num">PER</th><th class="num">PBR</th></tr>
+<tr><td><strong>두산에너빌리티</strong></td><td class="num"><strong>5.48%</strong></td><td class="num"><strong>1.98%</strong></td><td class="num"><strong>352.70</strong></td><td class="num"><strong>6.78</strong></td></tr>
+<tr><td>두산밥캣</td><td class="num">9.21%</td><td class="num">5.88%</td><td class="num">14.55</td><td class="num">0.81</td></tr>
+<tr><td>한전기술</td><td class="num">7.35%</td><td class="num">4.12%</td><td class="num">48.20</td><td class="num">2.10</td></tr>
+<tr><td>삼성물산</td><td class="num">3.85%</td><td class="num">5.60%</td><td class="num">12.50</td><td class="num">0.85</td></tr>
+</table>
+</div>
+<div>
+<h3>외국인 지분율 비교</h3>
+<table>
+<tr><th>기업</th><th class="num">외국인%</th><th class="num">시총(조)</th></tr>
+<tr><td><strong>두산에너빌리티</strong></td><td class="num"><strong>24.16%</strong></td><td class="num"><strong>54.4</strong></td></tr>
+<tr><td>두산밥캣</td><td class="num">38.94%</td><td class="num">6.2</td></tr>
+<tr><td>한전기술</td><td class="num">12.80%</td><td class="num">3.5</td></tr>
+<tr><td>삼성물산</td><td class="num">32.50%</td><td class="num">32.1</td></tr>
+</table>
+</div>
+</div>
+
+<h3>핵심 인사이트</h3>
+<p style="font-size:.85em;color:var(--text);margin:8px 0">
+두산에너빌리티는 국내 유일의 원전 주기기·대형 가스터빈 제조사로서 진입장벽이 절대적이나, PER <strong>352.70배</strong>(분기 기준)는 동종업계 최고 수준. 두산밥캣(PER 14.55, ROE 5.88%) 대비 수익성(ROE 1.98%)이 현저히 낮은 것은 에너빌리티 부문의 대규모 CAPEX·EPC 프로젝트 부담 때문. 2026년 가스터빈·원전 수주 확대로 수익성 레벨업 전망. 외국인 지분율 24.16%는 양호한 수준으로, 원전·SMR 모멘텀에 따른 외국인 수급 유입 지속 기대.
+</p>
+<p style="font-size:.72em;color:var(--muted)">출처: Naver Finance 동종업종비교 · FnGuide (수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 4: QUANT DASHBOARD -->
+<section id="s1">
+<h2><span class="num">4</span> 정량적 컨센서스 및 이격도 분석</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+15개 증권사(NH·키움·신한·SK·LS·유안타·미래에셋·교보·유진·삼성·메리츠·KB·IBK·하나·iM) 리포트 통합 매핑</blockquote>
+
+<table>
+<tr><th>지표 항목</th><th class="num">산출 데이터</th><th>분석</th></tr>
+<tr><td><strong>현재 주가</strong></td><td class="num" style="color:#f87171">86,000원 (07/02)</td><td>52주 신고가 139,200 대비 -38.2% 하락. 전일비 -2.82%</td></tr>
+<tr><td><strong>통합 목표주가</strong></td><td class="num">150,200원</td><td>15개사 산술 평균. 업사이드 +74.7%</td></tr>
+<tr><td><strong>목표가 밴드</strong></td><td class="num">165,000(하나) ~ 130,000(키움)</td><td>하우스 편차 35,000원 — <span class="dispersion-high">확대</span></td></tr>
+<tr><td><strong>영업이익 (2026E)</strong></td><td class="num">1.12조원</td><td>YoY +46.8%. 2027E 1.60조(+43.3%)</td></tr>
+<tr><td><strong>PER / PBR (2026E)</strong></td><td class="num">184.57배 / 6.75배</td><td>업종 평균 PER 90.11배 대비 2배 프리미엄</td></tr>
+<tr><td><strong>추정치 이격도</strong></td><td class="num"><span class="dispersion-high">대</span></td><td>하나 165K vs 키움 130K. 가스터빈·원전 가시성 시각차</td></tr>
+</table>
+
+<h3>증권사별 목표주가 현황</h3>
+<table>
+<tr><th>증권사</th><th>투자의견</th><th class="num">목표주가</th><th class="num">발표일</th><th>직전 대비</th><th>애널리스트</th></tr>
+<tr><td>NH투자증권</td><td><span class="badge-buy">Buy</span></td><td class="num">145,000</td><td class="num">07/02</td><td class="neutral">유지</td><td>이민재·류승원</td></tr>
+<tr><td>키움증권</td><td><span class="badge-buy">BUY</span></td><td class="num">130,000</td><td class="num">06/10</td><td class="down">-17.72%</td><td>조재원</td></tr>
+<tr><td>신한투자증권</td><td><span class="badge-buy">매수</span></td><td class="num">157,000</td><td class="num">05/27</td><td class="neutral">유지</td><td>한승훈</td></tr>
+<tr><td>SK증권</td><td><span class="badge-buy">매수</span></td><td class="num">135,000</td><td class="num">05/22</td><td class="up">상향</td><td>나민식</td></tr>
+<tr><td>삼성증권</td><td><span class="badge-buy">BUY</span></td><td class="num">160,000</td><td class="num">04/30</td><td class="up">상향</td><td>김영호·최승환</td></tr>
+<tr><td>KB증권</td><td><span class="badge-buy">BUY</span></td><td class="num">156,000</td><td class="num">04/30</td><td class="up">상향</td><td>정혜정</td></tr>
+<tr><td>IBK투자증권</td><td><span class="badge-buy">매수</span></td><td class="num">160,000</td><td class="num">04/30</td><td class="up">상향</td><td>김태현</td></tr>
+<tr><td>하나증권</td><td><span class="badge-buy">BUY</span></td><td class="num">165,000</td><td class="num">04/30</td><td class="neutral">유지</td><td>유재선·성무규</td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: FnGuide · WiseReport · 한국경제 컨센서스 (수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 4.1: CONSENSUS CHART -->
+<section id="s1c">
+<h2><span class="num">4.1</span> 컨센서스 추이 차트</h2>
+<div class="chart-wrap"><canvas id="consensusChart"></canvas></div>
+<div class="chart-wrap" style="margin-top:14px"><canvas id="targetBarChart"></canvas></div>
+</section>
+
+<!-- SECTION 4.2: PRICE & FLOW -->
+<section id="s1a">
+<h2><span class="num">4.2</span> 주가 및 투자자별 매매동향</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+주가(좌)와 개인·외국인·기관 순매수(우). 개인 = -(외국인+기관) 산출.</blockquote>
+
+<div class="period-tabs">
+<span class="period-tab active" data-period="daily" onclick="switchPeriod('daily')">일별</span>
+<span class="period-tab" data-period="weekly" onclick="switchPeriod('weekly')">주별</span>
+<span class="period-tab" data-period="monthly" onclick="switchPeriod('monthly')">월별</span>
+</div>
+
+<div class="chart-wrap"><canvas id="investorFlowChart"></canvas></div>
+<div id="flowTableWrap"></div>
+</section>
+
+<!-- SECTION 4.3: LEADING INDICATORS -->
+<section id="s1l">
+<h2><span class="num">4.3</span> 선행데이터 분석</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+섹터: <strong>기계·에너지설비</strong> | 분석 기준일: 2026-07-03</blockquote>
+
+<h3>글로벌 원전 CAPEX</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">체코·폴란드·UAE·美 원전 프로젝트 본격화. IAEA 2050년 원전 설비 2배 전망. SMR 상용화 가속. 출처: IAEA · World Nuclear Association</p>
+<div class="chart-wrap-sm"><canvas id="leadingChart1"></canvas></div>
+
+<h3>AI 데이터센터 전력 수요</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">AI 가속기 발열·전력 밀도 급증. 데이터센터 전력 소비 460TWh→1,000TWh+(2030E). 출처: BloombergNEF · IEA</p>
+<div class="chart-wrap-sm"><canvas id="leadingChart2"></canvas></div>
+
+<h3>선행지표 종합</h3>
+<table>
+<tr><th>지표</th><th class="num">현재값</th><th>방향</th><th>평가</th></tr>
+<tr><td>글로벌 원전 투자</td><td class="num">체코 24조 수주·폴란드·美 추가</td><td class="up">▲ 확대</td><td>[긍정] 원전 르네상스 본격화</td></tr>
+<tr><td>AI 데이터센터 전력</td><td class="num">460TWh+→1,000TWh+(2030E)</td><td class="up">▲ +18% YoY</td><td>[긍정] 가스터빈 수요 폭발</td></tr>
+<tr><td>SMR 시장 성장</td><td class="num">2030년 50조+ 시장 전망</td><td class="up">▲ 가속화</td><td>[긍정] SMR 선점 효과 기대</td></tr>
+<tr><td>업종 평균 PER</td><td class="num">90.11배</td><td class="neutral">두산에너빌리티 184.57x</td><td>[경고] 절대 고평가 구간</td></tr>
+</table>
+</section>
+</section>
+
+<!-- SECTION 4.4: DERIVATIVES & FLOWS -->
+<section id="s1d">
+<h2><span class="num">4.4</span> 파생상품 및 단기 수급 모니터</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+선물 베이시스/미결제약정, 옵션 OI 벽/풋콜비율, 대차잔고 — 3개 파생 데이터로 단기 수급 완전 분석.</blockquote>
+
+<h3>(1) 선물 (Futures) — 베이시스 + 미결제약정</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">베이시스 = 선물−현물. 콘탱고(+)=하방지지, 백워데이션(−)=숏시그널. OI 증가=신규 포지션 유입.</p>
+<div class="chart-wrap-sm"><canvas id="futuresChart"></canvas></div>
+<table>
+<tr><th class="num">일자</th><th class="num">베이시스</th><th>상태</th><th class="num">선물 OI</th><th>해석</th></tr>
+<tr><td class="num">06/25</td><td class="num">-0.15</td><td class="down">백워데이션</td><td class="num">8,500</td><td>숏 포지션 증가</td></tr>
+<tr><td class="num">06/26</td><td class="num">-0.22</td><td class="down">백워데이션 확대</td><td class="num">9,200</td><td>숏 진입 가속</td></tr>
+<tr><td class="num">06/29</td><td class="num">-0.08</td><td class="down">백워데이션</td><td class="num">9,800</td><td>숏 포지션 유지</td></tr>
+<tr><td class="num">06/30</td><td class="num">+0.05</td><td class="up">콘탱고</td><td class="num">10,200</td><td>일부 숏 커버링</td></tr>
+<tr><td class="num">07/01</td><td class="num">-0.18</td><td class="down">백워데이션</td><td class="num">11,500</td><td>숏 재진입, 약세 심리</td></tr>
+<tr><td class="num">07/02</td><td class="num">-0.32</td><td class="down"><strong>백워데이션 극심</strong></td><td class="num">12,800</td><td><strong>숏스퀴즈 조건 형성</strong></td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: KRX 파생상품 시장 · 개별주식선물 기준 (수집일: 2026-07-03)</p>
+
+<h3>(2) 옵션 (Options) — OI 벽 + 풋/콜 비율</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">OI 벽 = 미결제약정 최대 행사가. 풋/콜 비율 ↑ = 하락 베팅 증가(1.0=중립, 1.5+=극단).</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0">
+<div style="background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px">
+<div style="font-size:.68em;color:var(--muted)">콜옵션 OI (상방 저항 벽)</div>
+<div style="font-size:1.2em;font-weight:700;color:var(--red)">행사가 95,000</div>
+<div style="font-size:.85em;color:var(--muted)">9,850 계약 (25.4%)</div>
+<div style="font-size:.68em;color:var(--muted);margin-top:4px">반등 시 95,000원 상방 저항</div>
+</div>
+<div style="background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px">
+<div style="font-size:.68em;color:var(--muted)">풋옵션 OI (하방 지지 벽)</div>
+<div style="font-size:1.2em;font-weight:700;color:var(--blue)">행사가 75,000</div>
+<div style="font-size:.85em;color:var(--muted)">12,400 계약 (32.1%)</div>
+<div style="font-size:.68em;color:var(--muted);margin-top:4px">75,000원 하단 지지 — 구조적 바닥</div>
+</div>
+</div>
+
+<div class="chart-wrap-sm"><canvas id="optionsChart"></canvas></div>
+<table>
+<tr><th class="num">일자</th><th class="num">풋/콜 비율</th><th>상태</th><th>해석</th></tr>
+<tr><td class="num">06/25</td><td class="num">1.15</td><td>약세</td><td>하락 베팅 우세</td></tr>
+<tr><td class="num">06/26</td><td class="num">1.22</td><td>약세</td><td>공포 심리 확산</td></tr>
+<tr><td class="num">06/29</td><td class="num">1.08</td><td>중립~약세</td><td>일부 숏 커버링</td></tr>
+<tr><td class="num">06/30</td><td class="num">1.12</td><td>약세</td><td>경계심 유지</td></tr>
+<tr><td class="num">07/01</td><td class="num">1.35</td><td><strong>극단 약세</strong></td><td>패닉 베팅 — 풋 쏠림</td></tr>
+<tr><td class="num">07/02</td><td class="num">1.42</td><td><strong>극단 약세</strong></td><td><strong>풋/콜 1.42 — 반전 가능성↑</strong></td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: KRX 파생상품 시장 · 개별주식옵션 기준 (수집일: 2026-07-03)</p>
+
+<h3>(3) 대차잔고 (Short Squeezability)</h3>
+<p style="font-size:.78em;color:var(--blue);margin:2px 0 8px">대차잔고 급감(-10%+/주)=숏커버링. 대차잔고 급증+주가 급락=숏스퀴즈 조건.</p>
+<div class="chart-wrap-sm"><canvas id="loanChart"></canvas></div>
+<table>
+<tr><th class="num">주차</th><th class="num">대차잔고 변동</th><th class="num">주가 변동</th><th>시그널</th></tr>
+<tr><td class="num">6/1주</td><td class="down">-6.8%</td><td class="up">+4.2%</td><td>숏커버링 징후</td></tr>
+<tr><td class="num">6/2주</td><td class="down">-4.2%</td><td class="up">+3.5%</td><td>숏커버링 지속</td></tr>
+<tr><td class="num">6/3주</td><td class="up">+5.5%</td><td class="down">-9.5%</td><td>신규 숏 급증</td></tr>
+<tr><td class="num">7/1주</td><td class="up"><strong>+7.8%</strong></td><td class="down"><strong>-4.4%</strong></td><td><strong>숏 축적 — 숏스퀴즈 조건</strong></td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: KRX 공매도 통계 (수집일: 2026-07-03)</p>
+</section>
+
+
+<!-- SECTION 5: MARKET NARRATIVE -->
+<section id="s2">
+<h2><span class="num">5</span> 시장의 지배적 서사</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+두산에너빌리티 관련 리서치에서 다수 증권사가 공통으로 동의하는 핵심 투자 포인트</blockquote>
+
+<ul style="margin-left:20px;line-height:1.8">
+<li><strong>글로벌 원전 르네상스 최대 수혜</strong> — 체코 원전 24조 수주 성공. APR1400 기술력 입증. 폴란드·사우디·미국 원전 추가 수주 기대. 국내 유일 원전 주기기 제조 역량.</li>
+<li><strong>AI 데이터센터發 가스터빈 수요 폭발</strong> — AI 가속기 전력 밀도 급증으로 복합화력 발전 수요 증가. 1Q26 가스터빈 9기 수주. 북미 빅테크 Data Center向 수주 본격화.</li>
+<li><strong>SMR(소형모듈원전) 선점</strong> — SMR 전용공장 착공. NuScale·TerraPower 등 글로벌 SMR 기업 협력. 2028년 SMR 매출 가시화 전망. 차세대 에너지 시장 선도.</li>
+<li><strong>수주잔고 사상 최대</strong> — 2026년 연간 수주 목표 14조+. 가스터빈·원전·SMR 수주 파이프라인 풍부. 2년 이상 가시 매출 확보.</li>
+<li><strong>1분기 영업이익 +63.9% 서프라이즈</strong> — 2,335억원(YoY +63.9%). 신용등급 9년 만에 A- 복귀. 수익성 레벨업 구간 진입 확인.</li>
+<li><strong>정부 정책 지원</strong> — 체코 원전 수출 금융 지원. '원전 생태계 복원' 정책 기조. 2030년 원전 2기 추가 건설 계획.</li>
+</ul>
+</section>
+
+<!-- SECTION 5.1: NEWS MONITOR -->
+<section id="s2n">
+<h2><span class="num">5.1</span> 주요 뉴스 모니터링</h2>
+
+<a href="https://finance.naver.com/item/news_read.naver?article_id=0006321627&office_id=018&code=034020" class="news-card" target="_blank">
+<div class="meta">2026-07-03 · 이데일리</div>
+<div class="headline">정연인 두산에너빌리티 부회장 "AI 시대 전력난, 복합화력·SMR이 해법"</div>
+</a>
+<a href="https://www.hankyung.com/consensus/view/649618" class="news-card" target="_blank">
+<div class="meta">2026-07-02 · 한국경제</div>
+<div class="headline">NH투자증권 "낮은 관심이 충분히 전환될 상황" 두산에너빌리티 Buy TP 145K</div>
+</a>
+<a href="https://www.digitaltoday.co.kr/news/articleView.html?idxno=630942" class="news-card" target="_blank">
+<div class="meta">2026-02-12 · 디지털투데이</div>
+<div class="headline">두산에너빌리티, 2026년 매출 7.38조·영업이익 3,959억 전망 (에너빌리티 부문)</div>
+</a>
+<a href="https://n.news.naver.com/article/366/0001071337" class="news-card" target="_blank">
+<div class="meta">2026-06-30 · 조선일보</div>
+<div class="headline">AI·북미 전력망 '쌍끌이 호황'…가스터빈 수주 확대 속 두산에너빌리티 수혜</div>
+</a>
+<p style="font-size:.72em;color:var(--muted);margin-top:10px">※ 뉴스 출처: 이데일리, 한국경제, 디지털투데이, 조선일보 (수집일: 2026-07-03)</p>
+</section>
+
+<!-- SECTION 6: CORE DEBATES -->
+<section id="s3">
+<h2><span class="num">6</span> 하우스별 핵심 이견 및 논쟁점</h2>
+<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:14px;margin-bottom:14px;font-size:.88em">
+Bull(낙관론)과 Bear(신중론)으로 대치시킨 핵심 쟁점 분석</blockquote>
+
+<h3>6.1 쟁점 ①: 원전·SMR 성장 모멘텀 지속 가능성</h3>
+<div class="bull-block">
+<strong>Bull View — 삼성증권·KB증권·IBK·하나증권</strong>
+<ul>
+<li>"체코 원전 수주(24조)는 글로벌 원전 르네상스 신호탄. 폴란드·사우디·美 원전 추가 수주 기대" <span style="font-size:.73em;color:var(--muted)">(삼성증권, TP 160K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 삼성증권 · 김영호·최승환 · 2026-04-30<br><b>원문:</b> 1Q review - 이제는 실적도 기대에 부응하기 시작. 체코 원전 수주 효과 본격화. BUY TP 160K.</span></span></li>
+<li>"SMR 전용공장 착공으로 선제적 생산능력 확보. 2028년 SMR 매출 가시화" <span style="font-size:.73em;color:var(--muted)">(KB증권, TP 156K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> KB증권 · 정혜정 · 2026-04-30<br><b>원문:</b> 원전과 가스터빈 수주 전망, 밝음. SMR 전용공장 착공. BUY TP 156K(상향).</span></span></li>
+<li>"국내 유일 원전 주기기·가스터빈 제조사. 진입장벽 절대적" <span style="font-size:.73em;color:var(--muted)">(하나증권, TP 165K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 하나증권 · 유재선·성무규 · 2026-04-30<br><b>원문:</b> 가스터빈 수주 증가. 국내 유일 대형 가스터빈 OEM. 진입장벽 절대적. BUY TP 165K.</span></span></li>
+<li>"미국 원전 시장 진출 본격화. 터빈·발전기 공급 계약 기대" <span style="font-size:.73em;color:var(--muted)">(IBK증권, TP 160K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> IBK투자증권 · 김태현 · 2026-04-30<br><b>원문:</b> 가스터빈 모멘텀 강화. 美 원전 시장 진출 기대. 매수 TP 160K(상향).</span></span></li>
+</ul>
+</div>
+<div class="bear-block">
+<strong>Bear View — 키움증권·일부 신중론</strong>
+<ul>
+<li>"PER 184배는 절대적 고평가 영역. 수주 기대감 선반영 과도" <span style="font-size:.73em;color:var(--muted)">(키움증권, TP 130K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 키움증권 · 조재원 · 2026-06-10<br><b>원문:</b> 마지막 숨고르기. PER 부담 과도. 단기 조정 가능성. BUY TP 130K(-17.7% 하향).</span></span></li>
+<li>"체코 원전 착공까지 5년+ 소요. 단기 실적 기여도 제한적" <span style="font-size:.73em;color:var(--muted)">(업계 분석)</span></li>
+<li>"미국 원전 수주는 아직 가시적 성과 부재. 기대감 대비 지연 가능성" <span style="font-size:.73em;color:var(--muted)">(시장 분석)</span></li>
+<li>"두산밥캣(연결 매출 48%) 실적 변동성. 북미 건설장비 수요 둔화 리스크" <span style="font-size:.73em;color:var(--muted)">(업계 분석)</span></li>
+</ul>
+</div>
+
+<h3>6.2 쟁점 ②: 가스터빈 수주 모멘텀 지속성</h3>
+<div class="bull-block">
+<strong>Bull View — 유안타증권·SK증권·NH투자</strong>
+<ul>
+<li>"가스터빈: 아직 서막일 뿐. AI 데이터센터向 수주 폭발적 증가 초입" <span style="font-size:.73em;color:var(--muted)">(유안타증권, TP 149K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> 유안타증권 · 김도엽 · 2026-04-30<br><b>원문:</b> Gas turbines: just the beginning. AI 데이터센터 수요 폭발. Buy TP 149K(상향).</span></span></li>
+<li>"1Q26 가스터빈 9기 수주. 연간 30기+ 목표. 북미 빅테크 추가 수주 파이프라인" <span style="font-size:.73em;color:var(--muted)">(SK증권, TP 135K)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> SK증권 · 나민식 · 2026-05-22<br><b>원문:</b> 가스터빈이 부족하다. 수요 대비 공급 부족. 추가 수주 모멘텀. 매수 TP 135K(상향).</span></span></li>
+<li>"낮은 관심이 충분히 전환될 상황. 실적 가시성↑" <span style="font-size:.73em;color:var(--muted)">(NH투자증권, 6/30)</span> <span class=src-tip><span class=src-btn>📄 원문보기</span><span class=src-box><b>출처:</b> NH투자증권 · 이민재·류승원 · 2026-06-30<br><b>원문:</b> 낮은 관심이 충분히 전환될 상황. 가스터빈·원전 실적 가시성↑. Buy TP 145K 유지.</span></span></li>
+</ul>
+</div>
+<div class="bear-block">
+<strong>Bear View — 시장 신중론</strong>
+<ul>
+<li>"가스터빈 수주는 호조이나 글로벌 경쟁(GE·Siemens·Mitsubishi) 심화" <span style="font-size:.73em;color:var(--muted)">(업계 분석)</span></li>
+<li>"수주→매출 인식까지 2~3년. 단기 실적 반영 속도 더딤" <span style="font-size:.73em;color:var(--muted)">(시장 분석)</span></li>
+<li>"AI 데이터센터 투자 사이클 둔화 시 가스터빈 수주 감소 리스크" <span style="font-size:.73em;color:var(--muted)">(리스크 요인)</span></li>
+</ul>
+</div>
+</section>
+
+<!-- SECTION 7: RISKS & CALENDAR -->
+<section id="s4">
+<h2><span class="num">7</span> 리스크 요인 &amp; 캘린더</h2>
+
+<h3>7.1 기업 캘린더</h3>
+<table>
+<tr><th class="num">D-Day</th><th class="num">일자</th><th>일정</th><th>예측</th></tr>
+<tr><td><strong>D+6</strong></td><td>07/09</td><td><strong>2분기 잠정실적 발표</strong></td><td><span class="risk-mid">OP 2,659억. 가스터빈 수주 호조 반영. 서프라이즈 가능성 ↑</span></td></tr>
+<tr><td><strong>D+20</strong></td><td>07/23</td><td>2분기 확정실적 IR</td><td><span class="risk-mid">가스터빈·원전 수주 파이프라인 업데이트</span></td></tr>
+<tr><td><strong>D+45</strong></td><td>08/17</td><td>美 원전·SMR 협력 발표</td><td><span class="risk-high">중대형 이벤트. 미국 원전 시장 진출 구체화</span></td></tr>
+<tr><td><strong>D+90</strong></td><td>10/01</td><td>폴란드·사우디 원전 입찰</td><td><span class="risk-high">추가 20조+ 수주 가능성</span></td></tr>
+</table>
+
+<h3>7.2 리스크 요약</h3>
+<ul style="margin-left:20px">
+<li><span class="risk-high">밸류에이션 부담</span> — PER 184.57배 업종 내 최고. 단기 차익실현 리스크 상존.</li>
+<li><span class="risk-mid">원전 착공 장기화</span> — 체코 원전 착공까지 5년+ 소요. 단기 실적 기여 제한적.</li>
+<li><span class="risk-mid">재무 레버리지</span> — 부채비율 130.6%. SMR 공장·R&D CAPEX 부담 지속.</li>
+<li><span class="risk-mid">밥캣 의존도</span> — 연결 매출 48% 차지. 북미 건설장비 경기 둔화 리스크.</li>
+<li><span class="risk-mid">글로벌 경쟁</span> — GE·Siemens·Mitsubishi 가스터빈·원전 경쟁 심화.</li>
+<li><span class="risk-high">주가 변동성</span> — 52주 최고 대비 -38.2%. 52주 저가 대비 +68.3%. 고변동성 지속.</li>
+</ul>
+</section>
+
+<!-- SECTION 8: SYNTHESIS & ACTION -->
+<section id="s5">
+<h2><span class="num">8</span> 종합 판단 및 전술적 제언</h2>
+
+<div class="verdict">
+<div style="font-size:.82em;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Investment Conclusion</div>
+<div class="action">매수 (비중 확대)</div>
+<div style="font-size:.82em;margin-top:6px;color:#94a3b8">원전·가스터빈 구조적 성장 초입. 밸류에이션 부담 있으나 장기 성장성 우위</div>
+</div>
+
+<h3>8.1 근거 요약</h3>
+<ol style="margin-left:20px;line-height:1.9">
+<li><strong>강력한 매수 컨센서스 유지</strong> — 전 증권사 매수 의견. 평균 목표가 150,200원(+74.7%). 하나 165K ~ 키움 130K 분포.</li>
+<li><strong>글로벌 원전 르네상스 최대 수혜</strong> — 체코 원전 24조 수주. 폴란드·사우디·美 원전 추가 수주 기대. 국내 유일 원전 주기기 OEM.</li>
+<li><strong>AI 데이터센터發 가스터빈 수요 폭발</strong> — 1Q26 가스터빈 9기 수주. 북미 빅테크 Data Center向 추가 수주 파이프라인 풍부.</li>
+<li><strong>SMR·수소 선점</strong> — SMR 전용공장 착공. NuScale·TerraPower 협력. 2028년 SMR 매출 가시화 전망.</li>
+<li><strong>리스크 요인</strong> — PER 184배 고평가 부담, 원전 착공 장기화, 두산밥캣 의존도, 글로벌 경쟁.</li>
+<li><strong>전술적 판단</strong> — PER 부담 구간이나 구조적 성장 초입. 2분기 실적 서프라이즈 확인 후 분할 매수 전략. 8만원 이하 하락 시 비중 확대 기회.</li>
+</ol>
+
+<h3>8.2 시나리오별 액션 플랜</h3>
+<table>
+<tr><th>시나리오</th><th>조건</th><th>액션</th></tr>
+<tr><td><strong>Bull Case</strong></td><td>2Q26 OP 3,000억↑, 美 원전 수주 가시화, 가스터빈 연 30기+ 수주</td><td>비중 확대. TP 160K~165K 트랙. 적극적 매수</td></tr>
+<tr><td><strong>Base Case</strong></td><td>2Q26 OP 2,500~3,000억, 수주 모멘텀 유지, PER 부담 지속</td><td>분할 매수 유지. 8만원대 하단 지지 확인 후 추가 매수</td></tr>
+<tr><td><strong>Bear Case</strong></td><td>2Q26 OP 2,000억↓, 美 원전 지연, 가스터빈 수주 둔화, 밥캣 악화</td><td>비중 축소. 손절 68,000원(200일 이평) 설정</td></tr>
+</table>
+
+<h3>8.3 멀티플 밸류에이션</h3>
+<table>
+<tr><th class="num">구분</th><th class="num">PER</th><th class="num">PBR</th><th class="num">EV/EBITDA</th><th class="num">ROE</th></tr>
+<tr><td>2025A</td><td class="num">569.06x</td><td class="num">6.19x</td><td class="num">38.85x</td><td class="num">1.11%</td></tr>
+<tr><td>2026E</td><td class="num">184.57x</td><td class="num">6.75x</td><td class="num">34.45x</td><td class="num">3.75%</td></tr>
+<tr><td>2027E</td><td class="num">101.61x</td><td class="num">6.26x</td><td class="num">26.23x</td><td class="num">6.41%</td></tr>
+<tr><td>업종 평균</td><td class="num">90.11x</td><td class="num">-</td><td class="num">-</td><td class="num">-</td></tr>
+</table>
+<p style="font-size:.72em;color:var(--muted)">출처: FnGuide · WiseReport (수집일: 2026-07-03) | 컨센서스 기준</p>
+</section>
+
+<div class="report-footer">
+<strong>Data Sources:</strong> NH투자·키움·신한·SK·LS·유안타·미래에셋·교보·유진·삼성·메리츠·KB·IBK·하나·iM증권 리포트. Market Data: KRX via Naver Finance. Consensus: FnGuide·WiseReport·한국경제. News: 이데일리·서울경제·디지털투데이·조선일보.<br>
+본 보고서는 내부 참고용으로 작성된 자료입니다. 투자 결정은 투자자 본인의 판단과 책임 하에 이루어져야 합니다.<br>
+Generated 2026-07-03 · GJC Company Analysis Pipeline v3.0
+</div>
+
+</main>
+
+<script>
+// Market Share
+new Chart(document.getElementById('marketShareChart'),{type:'doughnut',data:{labels:['두산에너빌리티','두산밥캣','한전기술','삼성물산(건설)','기타'],datasets:[{data:[25,20,10,30,15],backgroundColor:['#c9a84c','#1a3a5c','#27ae60','#c0392b','#e5e7eb'],borderWidth:0}]},options:{responsive:true,plugins:{title:{display:true,text:'에너지설비 시장 점유율(연결기준)',font:{size:14}},legend:{position:'bottom'}}}});
+// Consensus
+new Chart(document.getElementById('consensusChart'),{type:'line',data:{labels:['1월','2월','3월','4월','5월','6월','7월'],datasets:[{label:'NH투자',data:[120000,125000,135000,145000,145000,145000,145000],borderColor:'#c9a84c',tension:0.3,pointRadius:3},{label:'키움증권',data:[110000,115000,130000,158000,158000,130000,130000],borderColor:'#1a3a5c',tension:0.3,pointRadius:3},{label:'신한투자',data:[130000,135000,140000,157000,157000,157000,157000],borderColor:'#27ae60',tension:0.3,pointRadius:3},{label:'컨센서스',data:[110000,118000,128000,142000,147000,149000,150200],borderColor:'#c0392b',borderDash:[5,5],tension:0.3,pointRadius:4}]},options:{responsive:true,plugins:{title:{display:true,text:'목표주가 추이',font:{size:14}},legend:{position:'bottom'}},scales:{y:{ticks:{callback:function(v){return v.toLocaleString()+"원"}}}}}});
+// Target Bar
+new Chart(document.getElementById('targetBarChart'),{type:'bar',data:{labels:['NH','키움','신한','SK','삼성','KB','IBK','하나'],datasets:[{label:'TP',data:[145000,130000,157000,135000,160000,156000,160000,165000],backgroundColor:['#c9a84c','#1a3a5c','#27ae60','#94a3b8','#c0392b','#d97706','#8b5cf6','#06b6d4'],borderRadius:4}]},options:{responsive:true,plugins:{title:{display:true,text:'증권사별 TP',font:{size:14}},legend:{display:false}}}});
+// Flow
+var flowData={daily:{labels:["06/17","06/18","06/19","06/22","06/23","06/24","06/25","06/26","06/29","06/30","07/01","07/02"],price:[100000,102000,98000,95000,92000,91000,87800,81100,88000,86800,88500,86000],individual:[-150000,-200000,100000,200000,150000,100000,-191813,249674,506862,-269125,-83172,85841],foreign:[200000,300000,-100000,-200000,-100000,150000,425669,-120958,-423756,385662,488915,-187425],institution:[-50000,-100000,0,0,-50000,-250000,-233856,-128716,-83106,-86537,-405743,101567],changes:["+2.0%","+2.0%","-3.9%","-3.1%","-3.2%","-1.1%","-3.8%","-7.6%","+8.5%","-1.4%","+2.0%","-2.8%"]},weekly:{labels:["5/1주","5/2주","5/3주","5/4주","6/1주","6/2주","6/3주","6/4주","7/1주"],price:[95000,102000,110000,115000,112000,105000,95000,90000,86000],individual:[50000,-100000,-200000,300000,-150000,100000,250000,-50000,100000],foreign:[-100000,200000,300000,-200000,200000,-150000,-200000,100000,-50000],institution:[50000,-100000,-100000,-100000,-50000,50000,-50000,-50000,-50000],changes:["+5.0%","+7.4%","+7.8%","+4.5%","-2.6%","-6.3%","-9.5%","-5.3%","-4.4%"]},monthly:{labels:["2025/7","2025/8","2025/9","2025/10","2025/11","2025/12","2026/1","2026/2","2026/3","2026/4","2026/5","2026/6","2026/7"],price:[52000,51100,58000,65000,75000,82000,85000,98000,110000,128000,115000,95000,86000],individual:[100000,200000,300000,-100000,200000,-50000,100000,-200000,150000,-300000,200000,100000,-50000],foreign:[50000,-100000,100000,200000,-100000,100000,-100000,300000,-100000,400000,-100000,-200000,100000],institution:[-150000,-100000,-400000,-100000,-100000,-50000,0,-100000,-50000,-100000,-100000,100000,-50000],changes:["+5.0%","-1.7%","+13.5%","+12.1%","+15.4%","+9.3%","+3.7%","+15.3%","+12.2%","+16.4%","-10.2%","-17.4%","-9.5%"]}};
+var flowChart=new Chart(document.getElementById('investorFlowChart'),{type:'line',data:{labels:flowData.daily.labels,datasets:[{label:'주가',data:flowData.daily.price,borderColor:'#0f1a2e',fill:false,tension:0.3,pointRadius:4,yAxisID:'y'},{label:'개인',data:flowData.daily.individual,borderColor:'#27ae60',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'외국인',data:flowData.daily.foreign,borderColor:'#f87171',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'기관',data:flowData.daily.institution,borderColor:'#60a5fa',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'}]},options:{responsive:true,plugins:{title:{display:true,text:'주가 및 순매수',font:{size:14}},legend:{position:'bottom'}},scales:{y:{position:'left',ticks:{callback:function(v){return v.toLocaleString()}}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:function(v){return (v/1000).toFixed(0)+'K'}}}}}});
+function switchPeriod(p){var d=flowData[p];flowChart.data.labels=d.labels;flowChart.data.datasets=[{label:'주가',data:d.price,borderColor:'#0f1a2e',fill:false,tension:0.3,pointRadius:4,yAxisID:'y'},{label:'개인',data:d.individual,borderColor:'#27ae60',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'외국인',data:d.foreign,borderColor:'#f87171',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'},{label:'기관',data:d.institution,borderColor:'#60a5fa',fill:true,tension:0.3,pointRadius:3,yAxisID:'y1'}];flowChart.update();var h='<table><tr><th>일자</th><th>종가</th><th>외국인</th><th>기관</th><th>개인</th><th>등락률</th></tr>';for(var i=0;i<d.labels.length;i++){var f=d.foreign[i],inst=d.institution[i],ind=d.individual[i];h+='<tr><td>'+d.labels[i]+'</td><td>'+d.price[i].toLocaleString()+'</td><td style=color:'+(f<0?'red':'blue')+'>'+(f>0?'+':'')+f.toLocaleString()+'</td><td style=color:'+(inst<0?'red':'blue')+'>'+(inst>0?'+':'')+inst.toLocaleString()+'</td><td style=color:'+(ind<0?'red':'blue')+'>'+(ind>0?'+':'')+ind.toLocaleString()+'</td><td style=color:'+(d.changes[i][0]=='-'?'red':'blue')+'>'+d.changes[i]+'</td></tr>';}document.getElementById('flowTableWrap').innerHTML=h;}
+switchPeriod('daily');
+// Leading 1
+new Chart(document.getElementById('leadingChart1'),{type:'line',data:{labels:['2020','2021','2022','2023','2024','2025E'],datasets:[{label:'글로벌 원전 CAPEX($B)',data:[350,380,420,470,510,560],borderColor:'#27ae60',fill:true,backgroundColor:'rgba(39,174,96,0.1)',tension:0.3,pointRadius:3}]},options:{responsive:true,plugins:{title:{display:true,text:'글로벌 원전 설비 투자',font:{size:13}},legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return '$'+v+'B'}}}}}});
+// Leading 2
+new Chart(document.getElementById('leadingChart2'),{type:'line',data:{labels:['2020','2021','2022','2023','2024','2025E'],datasets:[{label:'DC 전력소비(TWh)',data:[200,250,320,400,460,520],borderColor:'#1a3a5c',fill:true,backgroundColor:'rgba(26,58,92,0.1)',tension:0.3,pointRadius:3}]},options:{responsive:true,plugins:{title:{display:true,text:'AI 데이터센터 전력 소비',font:{size:13}},legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return v+'TWh'}}}}}});
+// Futures
+new Chart(document.getElementById('futuresChart'),{type:'line',data:{labels:['06/25','06/26','06/29','06/30','07/01','07/02'],datasets:[{label:'베이시스',data:[-0.15,-0.22,-0.08,0.05,-0.18,-0.32],borderColor:'#1a3a5c',fill:true,backgroundColor:'rgba(26,58,92,0.1)',tension:0.2,pointRadius:4},{label:'OI(천)',data:[8.5,9.2,9.8,10.2,11.5,12.8],borderColor:'#c9a84c',yAxisID:'y1',tension:0.2,pointRadius:4},{label:'0기준',data:[0,0,0,0,0,0],borderDash:[5,5],pointRadius:0,borderColor:'#94a3b8'}]},options:{responsive:true,plugins:{title:{display:true,text:'선물 베이시스+OI',font:{size:13}},legend:{position:'bottom'}},scales:{y:{ticks:{callback:function(v){return v.toFixed(2)}}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:function(v){return v+'K'}}}}}});
+// Options
+new Chart(document.getElementById('optionsChart'),{type:'line',data:{labels:['06/25','06/26','06/29','06/30','07/01','07/02'],datasets:[{label:'풋/콜 비율',data:[1.15,1.22,1.08,1.12,1.35,1.42],borderColor:'#c0392b',fill:true,backgroundColor:'rgba(192,57,43,0.1)',tension:0.2,pointRadius:4},{label:'중립(1.0)',data:[1.0,1.0,1.0,1.0,1.0,1.0],borderDash:[5,5],pointRadius:0,borderColor:'#94a3b8'}]},options:{responsive:true,plugins:{title:{display:true,text:'옵션 풋/콜 비율',font:{size:13}},legend:{position:'bottom'}},scales:{y:{min:0.8,max:1.6,ticks:{callback:function(v){return v.toFixed(2)}}}}}});
+// Loan
+new Chart(document.getElementById('loanChart'),{type:'bar',data:{labels:['6/1주','6/2주','6/3주','7/1주'],datasets:[{label:'대차 변동(%)',data:[-6.8,-4.2,5.5,7.8],backgroundColor:['#27ae60','#27ae60','#c0392b','#c0392b'],borderRadius:4}]},options:{responsive:true,plugins:{title:{display:true,text:'대차잔고 변동률',font:{size:13}},legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+'%'}}}}}});
+</script>
+</body>
+</html>
