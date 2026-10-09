@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>[CA] {{STOCK_NAME}} ({{STOCK_CODE}}) | Company Analysis</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<title>{{TITLE}} | Company Analysis RA</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 <style>
 :root{--navy:#0f1a2e;--blue:#1a3a5c;--accent:#c9a84c;--red:#c0392b;--green:#27ae60;--bg:#fafaf9;--card:#fff;--text:#1a1a1a;--muted:#6b7280;--border:#e5e7eb;--bull-bg:#e8f5e9;--bear-bg:#fbe9e7}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -68,347 +68,70 @@ a.news-card:hover{background:#f8fafc}
 <div class="logo">Company <span>Analysis</span></div>
 <a href="#sa">A. Company Overview</a>
 <a href="#s0">0. Executive Summary</a>
-<a href="#s1">1. Quant Dashboard</a>
-<a href="#s1c">1.5 Consensus Chart</a>
+<a href="#s1">1. Financials &amp; Consensus</a>
+<a href="#s1c">1.5 Evidence Charts</a>
 <a href="#s1l">1.8 Leading Indicators</a>
 <a href="#s1d">1.9 Derivatives &amp; Flows</a>
-<a href="#s2">2. Mainstream Consensus</a>
+<a href="#s2">2. Mainstream Views</a>
 <a href="#s2n">2.5 News Monitor</a>
 <a href="#s3">3. Core Debates</a>
 <a href="#s4">4. Risks &amp; Calendar</a>
-<a href="#s5">5. Synthesis &amp; Action</a>
-<div class="disclaimer">GJC Company Analysis<br>Pipeline v3.0<br>Generated {{COLLECT_DATE}}<br>낮부 참고용 자료</div>
+<a href="#s5">5. Research Conclusion</a>
+<div class="disclaimer">Company Analysis RA v3.1<br>AI 생성 리서치 초안</div>
 </nav>
 <main>
-<div class="report-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;">
-<div style="flex:1;min-width:300px;">
-<div class="tag">Integrated Company Analysis Report</div>
-<h1>{{STOCK_NAME}} <span style="font-weight:400;color:var(--muted)">{{STOCK_CODE}}</span></h1>
-<div class="sub">리서치/운용 본부 내부용 · {{COLLECT_DATE}} 기준 · 취합: {{REPORT_FIRMS}}</div>
+<div class="report-header">
+<div class="tag">Company Analysis RA · AI 생성</div>
+<h1>{{TITLE}}</h1>
+<div class="sub">정보 기준시각: {{AS_OF}} · 섹터: {{SECTOR}} · 자동 검사: {{STATUS}}</div>
+<p>자동 검사는 구조·계산·참조를 확인합니다. 원문 내용 대조와 브라우저 확인은 별도로 수행합니다.</p>
+{{WARNINGS}}
 </div>
-<div class="fear-gauge" style="background:var(--navy);color:#fff;padding:12px 16px;border-radius:8px;text-align:center;min-width:180px;flex-shrink:0;">
-<div style="font-size:.6em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;cursor:help;" title="RSI(14) 계산 공식:&#10;RSI = 100 − (100 / (1 + RS))&#10;RS = AU(14) / AD(14)&#10;AU = 최근 14일 상승분 평균&#10;AD = 최근 14일 하락분 평균&#10;출처: investing.com / Naver Finance 차트">RSI(14)</div>
-<div style="width:100%;background:rgba(255,255,255,0.1);border-radius:4px;height:20px;position:relative;overflow:hidden;margin:8px 0;">
-<div style="width:{{RSI_PCT}}%;background:{{RSI_COLOR}};height:100%;border-radius:4px;"></div>
-</div>
-<div style="display:flex;justify-content:space-between;font-size:.55em;color:#64748b;margin-top:2px;">
-<span>과매도 (0)</span><span>과매수 (100)</span>
-</div>
-<div style="text-align:center;margin-top:8px;">
-<span style="font-size:1.6em;font-weight:800;color:{{RSI_COLOR}};line-height:1;">{{RSI_VALUE}}</span>
-<span style="font-size:.7em;color:#94a3b8;margin-left:6px;">{{RSI_LABEL}}</span>
-</div>
-<div style="font-size:.5em;color:#64748b;margin-top:4px;">{{RSI_SRC}} · {{RSI_DATE}}</div>
-</div>
-</div>
-
-<!-- ===== SECTION A ===== -->
-<section id="sa">
-<h2><span class="num">A</span> 기업 개요 &amp; 경쟁 구도 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">
-  섹터: <strong>{{SECTOR}}</strong> | 시장 규모: {{MARKET_SIZE}} | 성장률(CAGR): {{CAGR}}
-</blockquote>
-<table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>기업명</strong></td><td>{{STOCK_NAME}} ({{STOCK_CODE}})</td></tr>
-  <tr><td><strong>설립연도</strong></td><td>{{FOUNDED}}</td></tr>
-  <tr><td><strong>대표이사</strong></td><td>{{CEO}}</td></tr>
-  <tr><td><strong>시가총액</strong></td><td>{{MARKET_CAP}}</td></tr>
-  <tr><td><strong>발행주식수</strong></td><td>{{SHARES_OUT}}</td></tr>
-  <tr><td><strong>외국인 지분율</strong></td><td>{{FOREIGN_OWN}}</td></tr>
-  <tr><td colspan="2" style="font-size:.75em;color:var(--muted);">출처: FnGuide Snapshot · Naver Finance · 기업 공식 IR (수집일: {{COLLECT_DATE}})</td></tr>
-</table>
-
-<h3>사업 부문</h3>
-<table>
-  <tr><th>사업 부문</th><th>주요 제품/서비스</th><th>매출 비중</th></tr>
-  <tr><td>{{BIZ1_NAME}}</td><td>{{BIZ1_DESC}}</td><td class="num">{{BIZ1_REV}}</td></tr>
-  <tr><td>{{BIZ2_NAME}}</td><td>{{BIZ2_DESC}}</td><td class="num">{{BIZ2_REV}}</td></tr>
-  <tr><td>{{BIZ3_NAME}}</td><td>{{BIZ3_DESC}}</td><td class="num">{{BIZ3_REV}}</td></tr>
-  <tr><td colspan="3" style="font-size:.75em;color:var(--muted);">출처: DART 사업보고서 · FnGuide 사업부문 (수집일: {{COLLECT_DATE}})</td></tr>
-</table>
-
-<h3>경쟁사 및 시장 점유율</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0;">
-  <div class="chart-wrap" style="margin:0;"><canvas id="marketShareChart"></canvas></div>
-  <div>
-    <table style="margin:0;">
-      <tr><th>경쟁사</th><th>시장 위치</th><th>비고</th></tr>
-      <tr><td>{{MY_COMPANY}}</td><td>{{MY_POSITION}}</td><td>{{MY_NOTE}}</td></tr>
-      <tr><td>{{COMP1_NAME}}</td><td>{{COMP1_POS}}</td><td>{{COMP1_NOTE}}</td></tr>
-      <tr><td>{{COMP2_NAME}}</td><td>{{COMP2_POS}}</td><td>{{COMP2_NOTE}}</td></tr>
-      <tr><td>{{COMP3_NAME}}</td><td>{{COMP3_POS}}</td><td>{{COMP3_NOTE}}</td></tr>
-    </table>
-    <p style="font-size:.8em;color:var(--muted);margin-top:8px;">출처: sector.md · 각 사 IR · 시장조사기관 (수집일: {{COLLECT_DATE}})</p>
-  </div>
-</div>
-<p style="font-size:.85em;color:var(--muted);"><strong>산업 동향:</strong> {{INDUSTRY_TREND}}</p>
-
-<h3>최근 3개년 요약 재무</h3>
-<table>
-  <tr><th>연도</th><th>매출액</th><th>영업이익</th><th>당기순이익</th></tr>
-  <tr><td>{{FY3}}</td><td class="num">{{FY3_REV}}</td><td class="num">{{FY3_OP}}</td><td class="num">{{FY3_NI}}</td></tr>
-  <tr><td>{{FY2}}</td><td class="num">{{FY2_REV}}</td><td class="num">{{FY2_OP}}</td><td class="num">{{FY2_NI}}</td></tr>
-  <tr><td>{{FY1}}</td><td class="num">{{FY1_REV}}</td><td class="num">{{FY1_OP}}</td><td class="num">{{FY1_NI}}</td></tr>
-  <tr><td colspan="4" style="font-size:.75em;color:var(--muted);">출처: FnGuide Financial Highlight · DART 사업보고서 (연결, 단위: 억원) (수집일: {{COLLECT_DATE}})</td></tr>
-</table>
-</section>
-
-<!-- ===== SECTION 0 ===== -->
-<section id="s0">
-<div class="exec-summary">
-  <h3>Executive Summary</h3>
-  <div class="metrics">
-    <div class="metric"><div class="label">현재가</div><div class="value">{{CURRENT_PRICE}}</div><div class="change">{{PRICE_CHANGE_DESC}}</div></div>
-    <div class="metric"><div class="label">컨센서스 목표가</div><div class="value">{{CONSENSUS_TARGET}}</div><div class="change">{{UPSIDE_DESC}}</div></div>
-    <div class="metric"><div class="label">영업이익</div><div class="value">{{OP_ESTIMATE}}</div><div class="change">{{OP_CHANGE_DESC}}</div></div>
-    <div class="metric"><div class="label">최종 판단</div><div class="value" style="color:var(--accent)">{{VERDICT_ACTION}}</div><div class="change">{{VERDICT_SUB}}</div></div>
-  </div>
-</div>
-</section>
-
-<!-- ===== SECTION 1 ===== -->
-<section id="s1">
-<h2><span class="num">1</span> 정량적 컨센서스 및 이격도 분석 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">{{CONSENSUS_COUNT}}개 하우스가 제시한 수치 데이터의 산술 평균값과 시각 차이(이격도)를 계량화한 대시보드입니다.</blockquote>
-<table>
-  <tr><th>지표 항목</th><th>산출 데이터</th><th>분석 및 특이사항</th></tr>
-  <tr><td><strong>현재 주가</strong></td><td class="num">{{CURRENT_PRICE}}원</td><td>{{PRICE_CONTEXT}}</td></tr>
-  <tr><td><strong>통합 목표주가 (컨센서스)</strong></td><td class="num">{{CONSENSUS_TARGET}}원</td><td>{{CONSENSUS_DESC}}</td></tr>
-  <tr><td><strong>목표가 밴드 (Max / Min)</strong></td><td class="num">{{TARGET_BAND}}</td><td>{{TARGET_BAND_DESC}}</td></tr>
-  <tr><td><strong>차기 연도 예상 영업이익</strong></td><td class="num">{{OP_ESTIMATE_VAL}}</td><td>{{OP_ESTIMATE_DESC}}</td></tr>
-  <tr><td><strong>추정치 이격도</strong></td><td class="num"><span class="dispersion-high">{{DISPERSION_LEVEL}}</span><br><span style="font-size:.75em;color:var(--muted);">하우스 간 목표주가 편차가 클수록 실적 불확실성이 높다는 신호</span></td><td>{{DISPERSION_DESC}}</td></tr>
-</table>
-
-<h3>증권사별 목표주가 현황</h3>
-<table>
-  <tr><th>증권사</th><th>투자의견</th><th>목표주가</th><th>발표일</th><th>직전 대비</th><th>애널리스트</th></tr>
-  <tr><td>{{BROKER1_NAME}}</td><td><span class="badge-buy">{{BROKER1_OP}}</span></td><td class="num">{{BROKER1_TARGET}}</td><td class="num">{{BROKER1_DATE}}</td><td class="{{BROKER1_CHG_CLASS}}">{{BROKER1_CHG}}</td><td>{{BROKER1_ANALYST}}</td></tr>
-  <tr><td>{{BROKER2_NAME}}</td><td><span class="badge-buy">{{BROKER2_OP}}</span></td><td class="num">{{BROKER2_TARGET}}</td><td class="num">{{BROKER2_DATE}}</td><td class="{{BROKER2_CHG_CLASS}}">{{BROKER2_CHG}}</td><td>{{BROKER2_ANALYST}}</td></tr>
-  <tr><td>{{BROKER3_NAME}}</td><td><span class="badge-buy">{{BROKER3_OP}}</span></td><td class="num">{{BROKER3_TARGET}}</td><td class="num">{{BROKER3_DATE}}</td><td class="{{BROKER3_CHG_CLASS}}">{{BROKER3_CHG}}</td><td>{{BROKER3_ANALYST}}</td></tr>
-  <tr><td>{{BROKER4_NAME}}</td><td><span class="badge-buy">{{BROKER4_OP}}</span></td><td class="num">{{BROKER4_TARGET}}</td><td class="num">{{BROKER4_DATE}}</td><td class="{{BROKER4_CHG_CLASS}}">{{BROKER4_CHG}}</td><td>{{BROKER4_ANALYST}}</td></tr>
-  <tr><td>{{BROKER5_NAME}}</td><td><span class="badge-buy">{{BROKER5_OP}}</span></td><td class="num">{{BROKER5_TARGET}}</td><td class="num">{{BROKER5_DATE}}</td><td class="{{BROKER5_CHG_CLASS}}">{{BROKER5_CHG}}</td><td>{{BROKER5_ANALYST}}</td></tr>
-  <tr><td colspan="6" style="font-size:.75em;color:var(--muted);">출처: FnGuide 컨센서스 · 각 증권사 리서치센터 (수집일: {{COLLECT_DATE}})</td></tr>
-</table>
-</section>
-
-<!-- ===== SECTION 1.5 ===== -->
-<section id="s1c">
-<h2><span class="num">1.5</span> 컨센서스 추이 차트 <span class="badge-ai">AI 생성</span></h2>
-<div class="chart-wrap"><canvas id="consensusChart"></canvas></div>
-<div class="chart-wrap" style="margin-top:16px;"><canvas id="targetBarChart"></canvas></div>
-</section>
-
-<!-- ===== SECTION 1.8 ===== -->
-<section id="s1l">
-<h2><span class="num">1.8</span> 선행데이터 분석 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">
-  섹터: <strong>{{SECTOR}}</strong> | 분석 기준일: {{COLLECT_DATE}} | 팩트 기반 객관적 데이터만 서술
-</blockquote>
-<h3>{{IND1_NAME}}</h3>
-<p style="font-size:.8em;color:var(--blue);margin:4px 0 12px;">의미: {{IND1_MEANING}}</p>
-<div class="chart-wrap"><canvas id="leadingChart1"></canvas></div>
-<p style="font-size:.85em;color:var(--muted);margin:8px 0 4px;">{{IND1_DESC}}<br>출처: {{IND1_SRC}} | 수집일: {{COLLECT_DATE}}</p>
-<h3>{{IND2_NAME}}</h3>
-<p style="font-size:.8em;color:var(--blue);margin:4px 0 12px;">의미: {{IND2_MEANING}}</p>
-<div class="chart-wrap"><canvas id="leadingChart2"></canvas></div>
-<p style="font-size:.85em;color:var(--muted);margin:8px 0 16px;">{{IND2_DESC}}<br>출처: {{IND2_SRC}} | 수집일: {{COLLECT_DATE}}</p>
-<h3>선행지표 종합 분석</h3>
-<table>
-  <tr><th>지표</th><th>의미</th><th>현재값</th><th>방향</th><th>코멘트</th></tr>
-  <tr><td>{{IND1_NAME}}</td><td style="font-size:.8em;color:var(--muted);">{{IND1_MEANING}}</td><td class="num">{{IND1_VAL}}</td><td class="{{IND1_DIR_CLASS}}">{{IND1_DIR}}</td><td>{{IND1_IMPL}}<br><span style="font-size:.75em;color:var(--muted);">[코멘트] {{IND1_EVAL}}</span></td></tr>
-  <tr><td>{{IND2_NAME}}</td><td style="font-size:.8em;color:var(--muted);">{{IND2_MEANING}}</td><td class="num">{{IND2_VAL}}</td><td class="{{IND2_DIR_CLASS}}">{{IND2_DIR}}</td><td>{{IND2_IMPL}}<br><span style="font-size:.75em;color:var(--muted);">[코멘트] {{IND2_EVAL}}</span></td></tr>
-  <tr><td>{{IND3_NAME}}</td><td style="font-size:.8em;color:var(--muted);">{{IND3_MEANING}}</td><td class="num">{{IND3_VAL}}</td><td class="{{IND3_DIR_CLASS}}">{{IND3_DIR}}</td><td>{{IND3_IMPL}}<br><span style="font-size:.75em;color:var(--muted);">[코멘트] {{IND3_EVAL}}</span></td></tr>
-  <tr><td>{{IND4_NAME}}</td><td style="font-size:.8em;color:var(--muted);">{{IND4_MEANING}}</td><td class="num">{{IND4_VAL}}</td><td class="{{IND4_DIR_CLASS}}">{{IND4_DIR}}</td><td>{{IND4_IMPL}}<br><span style="font-size:.75em;color:var(--muted);">[코멘트] {{IND4_EVAL}}</span></td></tr>
-</table>
-</section>
-
-<!-- ===== SECTION 1.9 ===== -->
-<section id="s1d">
-<h2><span class="num">1.9</span> 파생상품 및 단기 수급 모니터 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">
-  장기 펀더멘탈 외에 당장 내일의 주가를 흔드는 기계적 패시브 자금과 파생 포지션을 추적하여 오버슈팅 및 언더슈팅 구간을 정량적으로 포착합니다.
-</blockquote>
-
-<h3>(1) 시장 베이시스 (Futures Basis)</h3>
-<p style="font-size:.8em;color:var(--blue);margin:4px 0 12px;">선물가격 − 현물가격. 양수(+)=콘탱고(하방 지지), 음수(−)=백워데이션(숏 시그널)</p>
-<div class="chart-wrap"><canvas id="basisChart"></canvas></div>
-<table>
-  <tr><th>일자</th><th>베이시스</th><th>상태</th><th>해석</th></tr>
-  <tr><td class="num">{{BASIS_D5}}</td><td class="num">{{BASIS_V5}}</td><td class="{{BASIS_C5_CLASS}}">{{BASIS_C5}}</td><td>{{BASIS_X5}}</td></tr>
-  <tr><td class="num">{{BASIS_D4}}</td><td class="num">{{BASIS_V4}}</td><td class="{{BASIS_C4_CLASS}}">{{BASIS_C4}}</td><td>{{BASIS_X4}}</td></tr>
-  <tr><td class="num">{{BASIS_D3}}</td><td class="num">{{BASIS_V3}}</td><td class="{{BASIS_C3_CLASS}}">{{BASIS_C3}}</td><td>{{BASIS_X3}}</td></tr>
-  <tr><td class="num">{{BASIS_D2}}</td><td class="num">{{BASIS_V2}}</td><td class="{{BASIS_C2_CLASS}}">{{BASIS_C2}}</td><td>{{BASIS_X2}}</td></tr>
-  <tr><td class="num">{{BASIS_D1}}</td><td class="num">{{BASIS_V1}}</td><td class="{{BASIS_C1_CLASS}}">{{BASIS_C1}}</td><td>{{BASIS_X1}}</td></tr>
-  <tr><td colspan="4" style="font-size:.75em;color:var(--muted);">출처: KRX 파생상품 시장 → 코스피200 선물 베이시스 (수집일: {{COLLECT_DATE}})</td></tr>
-</table>
-
-<h3>(2) 옵션 미결제약정 벽 (Options OI Wall)</h3>
-<p style="font-size:.8em;color:var(--blue);margin:4px 0 12px;">미결제약정(Open Interest) 최대 행사가 = 단기 저항/지지 벽. 마켓메이커 헷징 물량이 집중되는 구간.</p>
-<div class="chart-wrap" style="display:flex;gap:20px;flex-wrap:wrap;">
-  <div style="flex:1;min-width:280px;">
-    <h4 style="font-size:.9em;margin-bottom:8px;">콜옵션 OI (상방 저항 벽)</h4>
-    <div style="background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px;">
-      <div style="font-size:.75em;color:var(--muted);margin-bottom:4px;">행사가 {{OI_CALL_STRIKE}}</div>
-      <div style="font-size:1.4em;font-weight:700;color:var(--red);">{{OI_CALL_QTY}} 계약</div>
-      <div style="font-size:.75em;color:var(--muted);margin-top:4px;">{{OI_CALL_PCT}}% of total call OI</div>
-    </div>
-  </div>
-  <div style="flex:1;min-width:280px;">
-    <h4 style="font-size:.9em;margin-bottom:8px;">풋옵션 OI (하방 지지 벽)</h4>
-    <div style="background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px;">
-      <div style="font-size:.75em;color:var(--muted);margin-bottom:4px;">행사가 {{OI_PUT_STRIKE}}</div>
-      <div style="font-size:1.4em;font-weight:700;color:var(--blue);">{{OI_PUT_QTY}} 계약</div>
-      <div style="font-size:.75em;color:var(--muted);margin-top:4px;">{{OI_PUT_PCT}}% of total put OI</div>
-    </div>
-  </div>
-</div>
-<p style="font-size:.85em;color:var(--muted);margin:12px 0 16px;">
-  <strong>상방 저항 벽</strong>: {{OI_CALL_STRIKE}} — 주가 근접 시 마켓메이커 헷징 매도 물량 쏟아짐 (단기 천장).<br>
-  <strong>하방 지지 벽</strong>: {{OI_PUT_STRIKE}} — 기계적 방어 매수세 결집 (구조적 바닥).<br>
-  출처: KRX → 파생상품 → 행사가격/만기별 가격표 (수집일: {{COLLECT_DATE}})
-</p>
-
-<h3>(3) 대차잔고 및 공매도 추이 (Short Squeezability)</h3>
-<p style="font-size:.8em;color:var(--blue);margin:4px 0 12px;">대차잔고 급감(-10%+/주) = 숏커버링 초기 징후. 주가 버티는데 잔고 줄면 롱 트리거.</p>
-<div class="chart-wrap"><canvas id="loanChart"></canvas></div>
-<table>
-  <tr><th>주차</th><th>대차잔고 변동</th><th>주가 변동</th><th>시그널</th></tr>
-  <tr><td class="num">{{LOAN_W4}}</td><td class="{{LOAN_C4_CLASS}}">{{LOAN_C4}}</td><td class="{{LOAN_P4_CLASS}}">{{LOAN_P4}}</td><td>{{LOAN_S4}}</td></tr>
-  <tr><td class="num">{{LOAN_W3}}</td><td class="{{LOAN_C3_CLASS}}">{{LOAN_C3}}</td><td class="{{LOAN_P3_CLASS}}">{{LOAN_P3}}</td><td>{{LOAN_S3}}</td></tr>
-  <tr><td class="num">{{LOAN_W2}}</td><td class="{{LOAN_C2_CLASS}}">{{LOAN_C2}}</td><td class="{{LOAN_P2_CLASS}}">{{LOAN_P2}}</td><td>{{LOAN_S2}}</td></tr>
-  <tr><td class="num">{{LOAN_W1}}</td><td class="{{LOAN_C1_CLASS}}">{{LOAN_C1}}</td><td class="{{LOAN_P1_CLASS}}">{{LOAN_P1}}</td><td>{{LOAN_S1}}</td></tr>
-  <tr><td colspan="4" style="font-size:.75em;color:var(--muted);">출처: KRX → 공매도 통계 → 종목별 대차거래 현황 (수집일: {{COLLECT_DATE}})</td></tr>
-</table>
-</section>
-
-<!-- ===== SECTION 2 ===== -->
-<section id="s2">
-<h2><span class="num">2</span> 시장의 지배적 서사 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">{{STOCK_NAME}} 관련 리서치에서 6개 이상이 공통으로 동의하는 핵심 투자 포인트입니다.</blockquote>
-{{SECTION2}}
-</section>
-
-<!-- ===== SECTION 2.5 ===== -->
-<section id="s2n">
-<h2><span class="num">2.5</span> 주요 뉴스 모니터링 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">
-  최근 7일 {{STOCK_NAME}} 관련 주요 뉴스. 뉴스 크롤링 엔진으로 실시간 수집. <span style="font-size:.75em;">수집일: {{COLLECT_DATE}}</span>
-</blockquote>
-<a href="{{NEWS1_URL}}" class="news-card" target="_blank">
-  <div class="meta">{{NEWS1_DATE}} · {{NEWS1_OUTLET}}</div>
-  <div class="headline">{{NEWS1_TITLE}}</div>
-</a>
-<a href="{{NEWS2_URL}}" class="news-card" target="_blank">
-  <div class="meta">{{NEWS2_DATE}} · {{NEWS2_OUTLET}}</div>
-  <div class="headline">{{NEWS2_TITLE}}</div>
-</a>
-<a href="{{NEWS3_URL}}" class="news-card" target="_blank">
-  <div class="meta">{{NEWS3_DATE}} · {{NEWS3_OUTLET}}</div>
-  <div class="headline">{{NEWS3_TITLE}}</div>
-</a>
-<a href="{{NEWS4_URL}}" class="news-card" target="_blank">
-  <div class="meta">{{NEWS4_DATE}} · {{NEWS4_OUTLET}}</div>
-  <div class="headline">{{NEWS4_TITLE}}</div>
-</a>
-<p style="font-size:.75em;color:var(--muted);margin-top:12px;">※ 뉴스는 웹 검색 기반 실시간 수집. 이미지는 og:image 자동 추출. 미수집 시 텍스트만 표시.</p>
-</section>
-
-<!-- ===== SECTION 3 ===== -->
-<section id="s3">
-<h2><span class="num">3</span> 하우스별 핵심 이견 및 논쟁점 <span class="badge-ai">AI 생성</span></h2>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">Bull(낙관론)과 Bear(신중론)으로 대치시킨 핵심 쟁점 분석. {{STOCK_NAME}} 리포트의 가장 중요한 분석 자산입니다.</blockquote>
-{{SECTION3}}
-</section>
-
-<!-- ===== SECTION 4 ===== -->
-<section id="s4">
-<h2><span class="num">4</span> 리스크 요인 &amp; 멀티 타임라인 <span class="badge-ai">AI 생성</span></h2>
-
-<h3>4.1 기업 고유 및 업황 캘린더</h3>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">해당 기업의 잠정/확정 실적 발표일, IR 개최일, 전방 산업 핵심 지표 발표 일정.</blockquote>
-{{SECTION4}}
-
-<h3>4.2 파생상품 및 기계적 수급 캘린더</h3>
-<blockquote style="color:var(--muted);border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;">펀더멘탈과 무관하게 파생상품 청산 스케줄로 인한 기계적 매물/왜곡 구간 경고.</blockquote>
-<table>
-  <tr><th>일정</th><th>다음 날짜</th><th>위험도</th><th>영향</th></tr>
-  <tr>
-    <td><strong>월간 옵션·개별주식선물 만기</strong><br><span style="font-size:.75em;color:var(--muted);">매월 둘째 목요일</span></td>
-    <td>{{NEXT_MONTHLY_EXPIRY}}</td>
-    <td><span class="risk-mid">중/상</span></td>
-    <td>만기 직전 동시호가(14:50) 기계적 매물/매수 왜곡</td>
-  </tr>
-  <tr>
-    <td><strong>네 마녀의 날 (Quarterly)</strong><br><span style="font-size:.75em;color:var(--muted);">3·6·9·12월 둘째 목요일</span></td>
-    <td>{{NEXT_QUARTERLY_EXPIRY}}</td>
-    <td><span class="risk-high">최상</span></td>
-    <td>지수·개별·선물·옵션 동시 만기. 수급 병목 최고치</td>
-  </tr>
-  <tr>
-    <td><strong>미국 옵션 만기 (OpEx)</strong><br><span style="font-size:.75em;color:var(--muted);">매월 셋째 금요일</span></td>
-    <td>{{NEXT_US_OPEX}}</td>
-    <td><span class="risk-mid">중</span></td>
-    <td>외인 롱·숏 청산. 국내 시장 간접 영향</td>
-  </tr>
-</table>
-
-<h3>리스크 요인 요약</h3>
-{{SECTION4_RISKS}}
-</section>
-
-<!-- ===== SECTION 5 ===== -->
-<section id="s5">
-<h2><span class="num">5</span> 종합 판단 및 전술적 제언 <span class="badge-ai">AI 생성</span></h2>
-{{SECTION5}}
-</section>
-
-<div class="report-footer">
-  <strong>Disclaimer</strong><br>
-  본 자료는 낮부 리서치 용도로 작성된 것이며, 투자 권유가 아닙니다. 모든 데이터는 AI 수집 및 에이전트 가공 자료로써 오류가 있을 수 있습니다. 실제 투자 결정은 전문 투자 자문사와 상의하십시오.<br><br>
-  <strong>{{DATA_SOURCES}}</strong><br>
-  Generated by GJC Company Analysis Pipeline v3.0 · {{COLLECT_DATE}}
-</div>
-
+<section id="sa"><h2><span class="num">A</span>기업 개요와 사업 구조</h2>{{PROFILE}}</section>
+<section id="s0"><div class="exec-summary"><h3>Executive Summary</h3><div class="metrics">{{SUMMARY}}</div></div></section>
+<section id="s1"><h2><span class="num">1</span>재무제표와 컨센서스</h2><h3>최근 완료된 회계연도 비교</h3>{{FINANCIALS}}<h3>하우스별 목표가와 집계 기준</h3>{{CONSENSUS}}</section>
+<section id="s1c"><h2><span class="num">1.5</span>근거 데이터 차트</h2>{{CHARTS}}</section>
+<section id="s1l"><h2><span class="num">1.8</span>산업 선행자료</h2>{{INDICATORS}}</section>
+<section id="s1d"><h2><span class="num">1.9</span>파생상품과 수급</h2>{{DERIVATIVES}}</section>
+<section id="s2"><h2><span class="num">2</span>공통 쟁점과 시장 해석</h2>{{NARRATIVE}}</section>
+<section id="s2n"><h2><span class="num">2.5</span>주요 공시와 뉴스</h2>{{NEWS}}</section>
+<section id="s3"><h2><span class="num">3</span>Bull / Bear 핵심 쟁점</h2>{{DEBATES}}</section>
+<section id="s4"><h2><span class="num">4</span>주요 일정과 확인 상태</h2>{{CALENDAR}}</section>
+<section id="s5"><h2><span class="num">5</span>리서치 결론과 추가 확인 사항</h2>{{CONCLUSION}}</section>
+<div class="report-footer"><strong>자료와 근거 위치</strong>{{SOURCES}}Generated by Company Analysis RA v3.1 · {{AS_OF}}</div>
 </main>
-
+<script id="chart-data" type="application/json">{{CHART_DATA_JSON}}</script>
 <script>
-new Chart(document.getElementById('marketShareChart'), {
-  type: 'doughnut',
-  data: { labels: {{CHART_MS_LABELS}}, datasets: [{ data: [{{MS_MY}}, {{MS_C1}}, {{MS_C2}}, {{MS_C3}}, {{MS_OTHER}}], backgroundColor: ['#c9a84c', '#1a3a5c', '#64748b', '#94a3b8', '#e5e7eb'], borderWidth: 0 }] },
-  options: { responsive: true, plugins: { title: { display: true, text: '{{SECTOR}} 시장 경쟁 구도 (추정)', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { position: 'bottom' } } }
-});
-new Chart(document.getElementById('consensusChart'), {
-  type: 'line',
-  data: { labels: {{CHART_MONTH_LABELS}}, datasets: {{CHART_CONSENSUS_DATASETS}} },
-  options: { responsive: true, plugins: { title: { display: true, text: '증권사별 목표주가 추이 (2026)', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { position: 'bottom' } }, scales: { y: { ticks: { callback: v => v.toLocaleString() } } } }
-});
-new Chart(document.getElementById('targetBarChart'), {
-  type: 'bar',
-  data: { labels: {{CHART_BAR_LABELS}}, datasets: [{ label: '목표주가', data: {{CHART_BAR_DATA}}, backgroundColor: ['#c9a84c', '#1a3a5c', '#64748b', '#94a3b8', '#e5e7eb'], borderRadius: 4 }] },
-  options: { responsive: true, plugins: { title: { display: true, text: '증권사별 목표주가 (2026-06)', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { display: false } }, scales: { y: { ticks: { callback: v => v.toLocaleString() }, beginAtZero: false } } }
-});
-new Chart(document.getElementById('leadingChart1'), {
-  type: 'line',
-  data: { labels: {{L1_LABELS}}, datasets: [{ label: '{{IND1_NAME}}', data: {{L1_DATA}}, borderColor: '#1a3a5c', backgroundColor: 'rgba(26,58,92,0.1)', fill: true, tension: 0.3, pointRadius: 3 }] },
-  options: { responsive: true, plugins: { title: { display: true, text: '{{IND1_NAME}} 추이', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { display: false } }, scales: { y: { beginAtZero: false } } }
-});
-new Chart(document.getElementById('leadingChart2'), {
-  type: 'line',
-  data: { labels: {{L2_LABELS}}, datasets: [{ label: '{{IND2_NAME}}', data: {{L2_DATA}}, borderColor: '#c9a84c', backgroundColor: 'rgba(201,168,76,0.1)', fill: true, tension: 0.3, pointRadius: 3 }] },
-  options: { responsive: true, plugins: { title: { display: true, text: '{{IND2_NAME}} 추이', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { display: false } }, scales: { y: { beginAtZero: false } } }
-});
-new Chart(document.getElementById('basisChart'), {
-  type: 'line',
-  data: { labels: {{BASIS_LABELS}}, datasets: [{ label: '베이시스', data: {{BASIS_DATA}}, borderColor: '#1a3a5c', backgroundColor: 'rgba(26,58,92,0.1)', fill: true, tension: 0.2, pointRadius: 4 }, { label: '0.0 기준선', data: {{BASIS_ZERO}}, borderDash: [5,5], pointRadius: 0, borderColor: '#94a3b8' }] },
-  options: { responsive: true, plugins: { title: { display: true, text: '최근 5거래일 베이시스 추이', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { position: 'bottom' } }, scales: { y: { ticks: { callback: v => v.toFixed(2) } } } }
-});
-new Chart(document.getElementById('loanChart'), {
-  type: 'bar',
-  data: { labels: {{LOAN_LABELS}}, datasets: [{ label: '대차잔고 변동(%)', data: {{LOAN_DATA}}, backgroundColor: {{LOAN_COLORS}}, borderRadius: 4 }] },
-  options: { responsive: true, plugins: { title: { display: true, text: '최근 4주 대차잔고 변동률', font: { size: 14, weight: 'bold' }, color: '#0f1a2e' }, legend: { display: false } }, scales: { y: { ticks: { callback: v => v + '%' } } } }
-});
+(function () {
+  var payload = document.getElementById('chart-data');
+  if (!payload) return;
+  var charts = JSON.parse(payload.textContent || '[]');
+  function fallback(canvas, message) {
+    var notice = document.createElement('p');
+    notice.textContent = message;
+    canvas.replaceWith(notice);
+  }
+  charts.forEach(function (chart) {
+    var canvas = document.getElementById(chart.id);
+    if (!canvas) return;
+    if (typeof Chart === 'undefined') {
+      fallback(canvas, '차트 라이브러리 미로드. 아래 근거 데이터 표를 확인하십시오.');
+      return;
+    }
+    try {
+      new Chart(canvas, {
+        type: chart.type,
+        data: chart.data,
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: chart.title }, legend: { position: 'bottom' } }
+        }
+      });
+    } catch (_) {
+      fallback(canvas, '차트를 표시하지 못했습니다. 아래 근거 데이터 표를 확인하십시오.');
+    }
+  });
+})();
 </script>
-
 </body>
 </html>
