@@ -5,7 +5,7 @@ const text = z.string().trim().min(1);
 const timestamp = z.iso.datetime({ offset: true });
 const publication = z.union([timestamp, z.iso.date()]);
 const source = z.strictObject({
-  id, name: text, url: z.httpUrl(), publishedAt: publication, collectedAt: timestamp,
+  id, name: text, url: z.httpUrl(), publishedAt: publication.nullable(), collectedAt: timestamp,
   locator: text, excerpt: text, access: z.enum(["direct", "secondary"]),
   originalUrl: z.httpUrl().optional(),
 });
@@ -13,7 +13,7 @@ const period = z.strictObject({
   kind: z.enum(["FY", "quarter", "YTD", "instant"]), start: z.iso.date(), end: z.iso.date(),
 });
 const observation = z.strictObject({
-  id, label: text, value: z.number().finite().nullable(), unit: text, metric: text, scope: text,
+  id, label: text, value: z.number().finite().refine((value) => Math.abs(value) <= Number.MAX_SAFE_INTEGER, "Rescale unit to preserve numeric precision").nullable(), unit: text, metric: text, scope: text,
   observedAt: timestamp, period, basis: z.enum(["consolidated", "separate", "market"]),
   status: z.enum(["actual", "preliminary", "estimate", "missing", "not-applicable"]),
   sourceIds: z.array(id), reason: text.optional(),
@@ -38,7 +38,7 @@ export const reportSchema = z.strictObject({
   company: z.strictObject({ name: text, ticker: text, market: text, currency: text, sector: text, fiscalYearEnd: z.string().regex(/^\d{2}-\d{2}$/).refine((value) => z.iso.date().safeParse(`2000-${value}`).success, "Invalid fiscal year end") }),
   sources: z.array(source).min(1), observations: z.array(observation).min(1),
   priceId: id, summaryIds: z.array(id).min(1),
-  financials: z.array(z.strictObject({ fiscalYear: z.number().int(), metrics })).length(3),
+  financials: z.array(z.strictObject({ fiscalYear: z.number().int().min(1000).max(9999), metrics })).length(3),
   brokers: z.array(z.strictObject({ name: text, targetId: id, opinion: text, sourceId: id })),
   consensusId: id.nullable(), charts: z.array(chart),
   profile: z.array(claim).min(1), narrative: z.array(claim), indicators: z.array(claim), derivatives: z.array(claim),

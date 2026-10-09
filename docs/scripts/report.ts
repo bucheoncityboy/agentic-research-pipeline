@@ -1,16 +1,21 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Script } from "node:vm";
 import { parse, type DefaultTreeAdapterMap } from "parse5";
 import { reportSchema, type ResearchReport, type Observation, type Claim, type Gate } from "./schema.js";
+import { pathsAlias, runCli } from "./files.js";
 
 const templatePath = fileURLToPath(new URL("../template.html", import.meta.url));
 const hash = (value: string): string => createHash("sha256").update(value).digest("hex");
 const unique = (values: string[]): string[] => [...new Set(values)];
 const htmlEscape = (value: string): string => value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
-const format = (observation: Observation): string => observation.value === null ? `미확보: ${observation.reason ?? "입력 근거 없음"}` : `${new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 4 }).format(observation.value)} ${observation.unit}`;
+const format = (observation: Observation): string => {
+  if (observation.value === null) return `${observation.status === "not-applicable" ? "미적용" : "미확보"}: ${observation.reason ?? "입력 근거 없음"}`;
+  const displayed = new Intl.NumberFormat("ko-KR", { maximumFractionDigits: observation.formula ? 4 : 20 }).format(observation.value);
+  const nonzero = observation.value !== 0 && /^-?0$/.test(displayed);
+  return `${nonzero ? observation.formula ? observation.value.toExponential(4) : String(observation.value) : displayed} ${observation.unit}`;
+};
 const statusLabels = { actual: "실제", preliminary: "잠정", estimate: "전망", missing: "미확보", "not-applicable": "미적용" };
 const financialKeys = ["revenue", "operatingProfit", "netIncome", "assets", "liabilities", "equity", "cash", "debt", "cfo", "capex"] as const;
 const financialLabels = ["매출액", "영업이익", "당기순이익", "자산", "부채", "자본", "현금", "이자부 차입금", "영업현금흐름", "CAPEX"];
@@ -18,9 +23,23 @@ const kinds = { fact: "사실", "external-view": "외부 전망", interpretation
 const tokenPattern = /\{\{obs:([a-zA-Z][a-zA-Z0-9_.-]*)\}\}/g;
 const tradeAction = /(?:매수|매도)\s*(?:추천|기회|진입)|분할\s*매수|적극적\s*매수|비중\s*(?:확대|축소|조절)|손절|목표\s*수익|수익\s*보장/;
 const samePeriod = (left: Observation, right: Observation): boolean => JSON.stringify(left.period) === JSON.stringify(right.period);
+const normalizedName = (value: string): string => value.normalize("NFKC").replace(/\s+/g, "").toLowerCase();
+const fiscalEnd = (year: number, monthDay: string): string => {
+  const [month, day] = monthDay.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(year, month ?? 1, 0)).getUTCDate();
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(Math.min(day ?? 1, lastDay)).padStart(2, "0")}`;
+};
+export function failedGate(message: string): Gate {
+  return { status: "FAIL", errors: [message], warnings: [], missingRequiredIds: [], inputSha256: "", outputSha256: null, verificationScope: "입력 구조·시점·출처 연결·계산·렌더링 검사. 원문 및 외부 링크는 별도 대조 필요." };
+}
 
 export function prepare(input: unknown): { report: ResearchReport | null; gate: Gate } {
-  const gate: Gate = { status: "FAIL", errors: [], warnings: [], missingRequiredIds: [], inputSha256: hash(JSON.stringify(input)), outputSha256: null, verificationScope: "입력 구조·시점·출처 연결·계산·렌더링 검사. 원문 진위 및 실제 링크 응답은 별도 대조 필요." };
+  const gate = failedGate(""); gate.errors = [];
+  try {
+    const serialized = JSON.stringify(input);
+    if (serialized === undefined) return { report: null, gate: failedGate("Input must be JSON-serializable") };
+    gate.inputSha256 = hash(serialized);
+  } catch { return { report: null, gate: failedGate("Input must be JSON-serializable without cycles or BigInt") }; }
   const parsed = reportSchema.safeParse(input);
   if (!parsed.success) {
     gate.errors.push(...parsed.error.issues.map((issue) => `SCHEMA ${issue.path.join(".")}: ${issue.message}`));
@@ -43,16 +62,22 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
     return observation;
   };
   for (const source of report.sources) {
-    const dateOnly = source.publishedAt.length === 10;
-    if (dateOnly ? source.publishedAt > report.asOf.slice(0, 10) : Date.parse(source.publishedAt) > asOf) gate.errors.push(`Future publication: ${source.id}`);
-    if (dateOnly ? source.collectedAt.slice(0, 10) < source.publishedAt : Date.parse(source.collectedAt) < Date.parse(source.publishedAt)) gate.errors.push(`Collected before publication: ${source.id}`);
-    if (source.publishedAt.length === 10 && source.publishedAt === report.asOf.slice(0, 10)) gate.warnings.push(`${source.id}: 당일 공개 시각 미확인`);
+    if (source.publishedAt === null) {
+      gate.warnings.push(`${source.id}: 공개일 미확인 — 수집시각으로 접근 가능 여부만 확인`);
+      if (Date.parse(source.collectedAt) > asOf) gate.errors.push(`Unknown publication retrieved after cutoff: ${source.id}`);
+    } else {
+      const dateOnly = source.publishedAt.length === 10;
+      if (dateOnly ? source.publishedAt > report.asOf.slice(0, 10) : Date.parse(source.publishedAt) > asOf) gate.errors.push(`Future publication: ${source.id}`);
+      if (dateOnly ? source.collectedAt.slice(0, 10) < source.publishedAt : Date.parse(source.collectedAt) < Date.parse(source.publishedAt)) gate.errors.push(`Collected before publication: ${source.id}`);
+      if (dateOnly && source.publishedAt === report.asOf.slice(0, 10)) gate.warnings.push(`${source.id}: 당일 공개 시각 미확인`);
+    }
     if (source.access === "secondary" && !source.originalUrl) gate.errors.push(`Secondary source lacks original URL: ${source.id}`);
   }
   for (const observation of report.observations) {
     checkSources(observation.sourceIds, observation.id);
     if (Date.parse(observation.observedAt) > asOf) gate.errors.push(`Future observation: ${observation.id}`);
     if (observation.period.start > observation.period.end) gate.errors.push(`Reversed period: ${observation.id}`);
+    if (observation.period.kind === "instant" && observation.period.start !== observation.period.end) gate.errors.push(`Instant period must use one date: ${observation.id}`);
     if (["missing", "not-applicable"].includes(observation.status)) {
       if (observation.value !== null || observation.formula || !observation.reason) gate.errors.push(`Missing/not-applicable requires null, reason and no formula: ${observation.id}`);
     } else if (!observation.formula && (observation.value === null || observation.sourceIds.length === 0)) {
@@ -61,24 +86,27 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
     if (observation.status === "not-applicable" && financialKeys.includes(observation.metric as typeof financialKeys[number]) && !["cfo", "capex"].includes(observation.metric)) gate.errors.push(`Core financial metric cannot be marked not-applicable: ${observation.id}`);
     if (observation.status !== "estimate" && observation.period.end > report.asOf.slice(0, 10)) gate.errors.push(`Actual period beyond cutoff: ${observation.id}`);
     if (observation.metric === "rsi" && observation.value !== null && (observation.value < 0 || observation.value > 100)) gate.errors.push(`RSI outside 0..100: ${observation.id}`);
+    if (observation.metric === "capex" && observation.value !== null && observation.value < 0) gate.errors.push(`CAPEX must be positive outflow: ${observation.id}`);
+    if (observation.formula && observation.sourceIds.length) gate.errors.push(`Derived sources are computed from inputs: ${observation.id}`);
   }
   const resolved = new Set<string>();
   const visiting = new Set<string>();
   function calculate(observation: Observation): void {
     if (!observation.formula || resolved.has(observation.id)) return;
-    if (visiting.has(observation.id)) { gate.errors.push(`Formula cycle: ${observation.id}`); return; }
-    visiting.add(observation.id);
     const { operation, inputs } = observation.formula;
+    if (["difference", "upside", "ratio-percent"].includes(operation) && inputs.length !== 2) gate.errors.push(`Binary formula requires two inputs: ${observation.id}`);
     if (unique(inputs).length !== inputs.length) gate.errors.push(`Duplicate formula input: ${observation.id}`);
     const rows = inputs.flatMap((observationId) => { const row = get(observationId, observation.id); return row ? [row] : []; });
-    for (const row of rows) calculate(row);
     if (rows.some((row) => row.basis !== observation.basis || row.scope !== observation.scope)) gate.errors.push(`Formula basis/scope mismatch: ${observation.id}`);
     if (rows.some((row) => row.unit !== rows[0]?.unit)) gate.errors.push(`Formula input unit mismatch: ${observation.id}`);
     if (operation !== "upside" && operation !== "ratio-percent" && rows.some((row) => row.unit !== observation.unit)) gate.errors.push(`Formula output unit mismatch: ${observation.id}`);
     if ((operation === "upside" || operation === "ratio-percent") && observation.unit !== "%") gate.errors.push(`Ratio output must use %: ${observation.id}`);
     if (operation === "ratio-percent" && rows.some((row) => !samePeriod(row, observation))) gate.errors.push(`Ratio period mismatch: ${observation.id}`);
+    if (operation === "upside" && (rows[0]?.metric !== "targetPrice" || rows[1]?.metric !== "price" || rows[0]?.basis !== "market" || rows[1]?.basis !== "market" || observation.metric !== "upside")) gate.errors.push(`Upside requires target price and market price: ${observation.id}`);
+    if (operation === "upside" && rows[1] && !samePeriod(rows[1], observation)) gate.errors.push(`Upside output must use market price period: ${observation.id}`);
     if (operation === "mean" && rows.some((row) => !samePeriod(row, observation) || row.metric !== observation.metric)) gate.errors.push(`Mean period/metric mismatch: ${observation.id}`);
     if (operation === "sum") {
+      if (rows.some((row) => row.period.kind === "instant" || ["assets", "liabilities", "equity", "cash", "debt", "price", "targetPrice", "rsi", "marketShare"].includes(row.metric))) gate.errors.push(`Cannot sum stock or snapshot observations: ${observation.id}`);
       const ordered = [...rows].sort((left, right) => left.period.start.localeCompare(right.period.start));
       if (ordered[0]?.period.start !== observation.period.start || ordered.at(-1)?.period.end !== observation.period.end || rows.some((row) => row.metric !== observation.metric)) gate.errors.push(`Sum period/metric mismatch: ${observation.id}`);
       for (let index = 1; index < ordered.length; index++) {
@@ -89,7 +117,7 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
     if (operation === "difference" && rows.length === 2) {
       const [left, right] = rows;
       if (left && right && !samePeriod(left, right)) {
-        const isQuarterFromYtd = left.metric === right.metric && left.period.kind === "YTD" && right.period.kind === "YTD" && left.period.start === right.period.start && Date.parse(observation.period.start) - Date.parse(right.period.end) === 86400000 && observation.period.end === left.period.end;
+        const isQuarterFromYtd = left.metric === right.metric && observation.metric === left.metric && observation.period.kind === "quarter" && left.period.kind === "YTD" && right.period.kind === "YTD" && left.period.start === right.period.start && Date.parse(observation.period.start) - Date.parse(right.period.end) === 86400000 && observation.period.end === left.period.end;
         if (!isQuarterFromYtd) gate.errors.push(`Difference period mismatch: ${observation.id}`);
       } else if (left && !samePeriod(left, observation)) gate.errors.push(`Difference output period mismatch: ${observation.id}`);
     }
@@ -109,24 +137,35 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
       }
     }
     if (computed !== null && !Number.isFinite(computed)) gate.errors.push(`Nonfinite result: ${observation.id}`);
+    if (computed !== null && Math.abs(computed) > Number.MAX_SAFE_INTEGER) gate.errors.push(`Rescale computed unit to preserve numeric precision: ${observation.id}`);
     if (observation.value !== null) gate.errors.push(`Derived value must be null before calculation: ${observation.id}`);
     observation.value = computed;
     observation.sourceIds = unique(rows.flatMap((row) => row.sourceIds));
     if (computed === null) { observation.status = "missing"; observation.reason = "계산 입력 미확보"; }
-    if (rows.some((row) => row.status === "estimate") && computed !== null) observation.status = "estimate";
-    else if (rows.some((row) => row.status === "preliminary") && computed !== null) observation.status = "preliminary";
-    visiting.delete(observation.id); resolved.add(observation.id);
+    if (computed !== null) observation.status = numericRows.some((row) => row.status === "estimate") ? "estimate" : numericRows.some((row) => row.status === "preliminary") ? "preliminary" : "actual";
+    if (computed !== null && observation.status !== "estimate" && observation.period.end > report.asOf.slice(0, 10)) gate.errors.push(`Computed actual period beyond cutoff: ${observation.id}`);
+    if (observation.metric === "capex" && computed !== null && computed < 0) gate.errors.push(`CAPEX must be positive outflow: ${observation.id}`);
   }
-  for (const observation of report.observations) calculate(observation);
+  for (const root of report.observations) {
+    const stack: Array<{ row: Observation; expanded: boolean }> = [{ row: root, expanded: false }];
+    while (stack.length) {
+      const frame = stack.pop(); if (!frame || !frame.row.formula || resolved.has(frame.row.id)) continue;
+      if (frame.expanded) { calculate(frame.row); visiting.delete(frame.row.id); resolved.add(frame.row.id); continue; }
+      if (visiting.has(frame.row.id)) { gate.errors.push(`Formula cycle: ${frame.row.id}`); continue; }
+      visiting.add(frame.row.id); stack.push({ row: frame.row, expanded: true });
+      for (const dependency of frame.row.formula.inputs) { const row = get(dependency, frame.row.id); if (row?.formula) stack.push({ row, expanded: false }); }
+    }
+  }
   const mandatory = [report.priceId];
   const years = report.financials.map((row) => row.fiscalYear).sort((left, right) => left - right);
   if (unique(years.map(String)).length !== 3 || years[1] !== (years[0] ?? 0) + 1 || years[2] !== (years[1] ?? 0) + 1) gate.errors.push("Financial years must be three consecutive completed fiscal years");
   const cutoffYear = Number(report.asOf.slice(0, 4));
-  const latestCompletedYear = report.asOf.slice(0, 10) >= `${cutoffYear}-${report.company.fiscalYearEnd}` ? cutoffYear : cutoffYear - 1;
+  const latestCompletedYear = report.asOf.slice(0, 10) > fiscalEnd(cutoffYear, report.company.fiscalYearEnd) ? cutoffYear : cutoffYear - 1;
   if (years.at(-1) !== latestCompletedYear) gate.errors.push("Financial years must end with the latest completed fiscal year");
   for (const row of report.financials) {
     const annualRows: Observation[] = [];
-    const expectedStart = new Date(Date.parse(`${row.fiscalYear - 1}-${report.company.fiscalYearEnd}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
+    const expectedEnd = fiscalEnd(row.fiscalYear, report.company.fiscalYearEnd);
+    const expectedStart = new Date(Date.parse(`${fiscalEnd(row.fiscalYear - 1, report.company.fiscalYearEnd)}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
     for (const key of financialKeys) {
       const observationId = row.metrics[key]; mandatory.push(observationId);
       const observation = get(observationId, `FY${row.fiscalYear}.${key}`);
@@ -134,7 +173,8 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
       const flow = ["revenue", "operatingProfit", "netIncome", "cfo", "capex"].includes(key);
       if (observation && (observation.period.kind !== (flow ? "FY" : "instant") || observation.period.end.slice(0, 4) !== String(row.fiscalYear) || observation.status === "estimate" || observation.period.end > report.asOf.slice(0, 10))) gate.errors.push(`Annual financial period/status mismatch: ${observationId}`);
       if (observation && observation.metric !== key) gate.errors.push(`Financial metric mismatch: ${observationId}`);
-      if (observation && observation.period.end.slice(5) !== report.company.fiscalYearEnd) gate.errors.push(`Financial year-end mismatch: ${observationId}`);
+      if (observation?.basis === "market") gate.errors.push(`Annual financial basis must be consolidated or separate: ${observationId}`);
+      if (observation && observation.period.end !== expectedEnd) gate.errors.push(`Financial year-end mismatch: ${observationId}`);
       if (observation && observation.period.start !== (flow ? expectedStart : observation.period.end)) gate.errors.push(`Incomplete annual period: ${observationId}`);
       if (observation && key === "capex" && observation.value !== null && observation.value < 0) gate.errors.push(`CAPEX must be positive outflow: ${observationId}`);
     }
@@ -152,17 +192,19 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
   }
   for (const observationId of unique(mandatory)) { const observation = get(observationId, "Required"); if (observation?.value === null && observation.status !== "not-applicable") gate.missingRequiredIds.push(observationId); }
   const price = get(report.priceId, "Price");
-  if (price && (price.metric !== "price" || price.unit !== report.company.currency || price.basis !== "market" || price.status === "not-applicable" || (price.value !== null && price.value <= 0))) gate.errors.push("Price definition must match report currency and positive market price");
-  for (const observationId of report.summaryIds) get(observationId, "Summary");
-  const brokerNames = report.brokers.map((row) => row.name);
+  if (price && (price.metric !== "price" || price.unit !== report.company.currency || price.basis !== "market" || price.period.kind !== "instant" || !["actual", "missing"].includes(price.status) || (price.value !== null && price.value <= 0))) gate.errors.push("Price definition must match report currency and positive observed instant market price");
+  if (price?.value !== null && price && asOf - Date.parse(price.observedAt) > 4 * 86400000) gate.warnings.push(`시세 관측시각이 기준시점보다 오래됨: ${price.observedAt}. 최신 거래일·휴장 여부 확인 필요`);
+  for (const observationId of report.summaryIds) { const observation = get(observationId, "Summary"); if (observation?.value === null && observation.status !== "not-applicable") gate.warnings.push(`요약 데이터 미확보: ${observationId}`); }
+  const brokerNames = report.brokers.map((row) => normalizedName(row.name));
   if (unique(brokerNames).length !== brokerNames.length) gate.errors.push("Only latest target per broker is allowed");
   for (const broker of report.brokers) {
     const target = get(broker.targetId, broker.name); checkSources([broker.sourceId], broker.name);
-    if (target && (target.metric !== "targetPrice" || target.unit !== report.company.currency || target.basis !== "market" || target.scope !== price?.scope || target.status === "not-applicable")) gate.errors.push(`Broker target definition mismatch: ${broker.name}`);
+    if (target && (target.metric !== "targetPrice" || target.unit !== report.company.currency || target.basis !== "market" || target.period.kind !== "instant" || target.scope !== price?.scope || target.status === "not-applicable")) gate.errors.push(`Broker target definition mismatch: ${broker.name}`);
     if (target && target.value !== null && (!target.sourceIds.includes(broker.sourceId) || target.value <= 0)) gate.errors.push(`Broker target lacks matching positive quote and source: ${broker.name}`);
   }
   if (report.consensusId) {
     const consensus = get(report.consensusId, "Consensus");
+    if (consensus && (consensus.metric !== "targetPrice" || consensus.unit !== report.company.currency || consensus.basis !== "market" || consensus.period.kind !== "instant" || consensus.scope !== price?.scope || consensus.status === "not-applicable" || (consensus.value !== null && consensus.value <= 0))) gate.errors.push("Consensus definition must be a positive target-price market snapshot");
     if (consensus?.formula && (consensus.formula.operation !== "mean" || JSON.stringify([...consensus.formula.inputs].sort()) !== JSON.stringify(report.brokers.map((row) => row.targetId).sort()))) gate.errors.push("Consensus must use exactly the displayed broker targets");
   }
   const claims = [...report.profile, ...report.narrative, ...report.indicators, ...report.derivatives, ...report.conclusion, ...report.debates.flatMap((debate) => [...debate.bull, ...debate.bear])];
@@ -182,15 +224,18 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
   for (const chart of report.charts) {
     if (report.charts.filter((other) => other.id === chart.id).length > 1) gate.errors.push(`Duplicate chart ID: ${chart.id}`);
     const chartRows: Observation[] = [];
+    if (chart.type === "line" && chart.labels.some((label, index) => index > 0 && label <= (chart.labels[index - 1] ?? ""))) gate.errors.push(`Line dates must be unique and ascending: ${chart.id}`);
     for (const dataset of chart.datasets) {
       if (dataset.observationIds.length !== chart.labels.length) gate.errors.push(`Chart length mismatch: ${chart.id}`);
+      const datasetRows = dataset.observationIds.flatMap((id) => { const row = observations.get(id); return row ? [row] : []; });
+      if (datasetRows.some((row) => row.metric !== datasetRows[0]?.metric || row.period.kind !== datasetRows[0]?.period.kind)) gate.errors.push(`Chart dataset metric/period kind mismatch: ${chart.id}`);
       for (const observationId of dataset.observationIds) { const observation = get(observationId, chart.id); if (observation) chartRows.push(observation); }
       if (chart.type === "line") for (const [index, observationId] of dataset.observationIds.entries()) {
         if (observations.get(observationId)?.period.end !== chart.labels[index]) gate.errors.push(`Line labels must match observation period end: ${chart.id}`);
       }
     }
     if (chartRows.some((row) => row.unit !== chartRows[0]?.unit || row.scope !== chartRows[0]?.scope || row.basis !== chartRows[0]?.basis)) gate.errors.push(`Chart unit/scope/basis mismatch: ${chart.id}`);
-    if (chart.type === "doughnut" && (chart.datasets.length !== 1 || chartRows.some((row) => row.value === null || row.value < 0 || row.unit !== "%" || !samePeriod(row, chartRows[0] as Observation)) || Math.abs(chartRows.reduce((sum, row) => sum + (row.value ?? 0), 0) - 100) > 0.01)) gate.errors.push(`Doughnut requires a complete same-market percentage partition: ${chart.id}`);
+    if (chart.type === "doughnut" && (chart.datasets.length !== 1 || unique(chartRows.map((row) => row.id)).length !== chartRows.length || unique(chart.labels.map(normalizedName)).length !== chart.labels.length || chartRows.some((row) => row.metric !== chartRows[0]?.metric || row.value === null || row.value < 0 || row.unit !== "%" || !samePeriod(row, chartRows[0] as Observation)) || Math.abs(chartRows.reduce((sum, row) => sum + (row.value ?? 0), 0) - 100) > 0.01)) gate.errors.push(`Doughnut requires a complete same-market percentage partition: ${chart.id}`);
   }
   for (const news of report.news) checkSources([news.sourceId], news.title);
   for (const event of report.calendar) checkSources(event.sourceIds, event.title);
@@ -205,11 +250,11 @@ export function render(report: ResearchReport, gate: Gate, template = readFileSy
   const sources = new Map(report.sources.map((source) => [source.id, source]));
   const citation = (ids: string[]): string => unique(ids).map((sourceId) => {
     const source = sources.get(sourceId); if (!source) throw new Error(`Unknown source: ${sourceId}`);
-    return `<a href="${htmlEscape(source.url)}" target="_blank" rel="noopener noreferrer" title="${htmlEscape(source.locator)}">${htmlEscape(source.name)} · ${htmlEscape(source.publishedAt)}</a>`;
+    return `<a href="${htmlEscape(source.url)}" target="_blank" rel="noopener noreferrer" title="${htmlEscape(source.locator)}">${htmlEscape(source.name)} · ${htmlEscape(source.publishedAt ?? "공개일 미확인")}</a>`;
   }).join(" · ");
   const value = (observationId: string): string => {
     const observation = observations.get(observationId); if (!observation) throw new Error(`Unknown observation: ${observationId}`);
-    return `<span data-observation-id="${htmlEscape(observationId)}">${htmlEscape(format(observation))}</span>`;
+    return `<span data-observation-id="${htmlEscape(observationId)}">${htmlEscape(format(observation))}</span>${["estimate", "preliminary", "not-applicable"].includes(observation.status) ? `<small> [${statusLabels[observation.status]}]</small>` : ""}`;
   };
   const claims = (items: Claim[]): string => items.length ? `<ul>${items.map((claim) => {
     const text = htmlEscape(claim.text).replace(tokenPattern, (_, observationId: string) => value(observationId));
@@ -240,7 +285,7 @@ export function render(report: ResearchReport, gate: Gate, template = readFileSy
     WARNINGS: gate.warnings.map((warning) => `<p>${htmlEscape(warning)}</p>`).join(""),
     PROFILE: claims(report.profile), SUMMARY: report.summaryIds.map((observationId) => {
       const observation = observations.get(observationId);
-      return `<div class="metric"><div class="label">${htmlEscape(observation?.label ?? "")}</div><div class="value">${value(observationId)}</div><div class="change">${observation ? citation(observation.sourceIds) : ""}</div></div>`;
+      return `<div class="metric"><div class="label">${htmlEscape(observation?.label ?? "")}</div><div class="value">${value(observationId)}</div><div class="change">${observation ? `관측: ${htmlEscape(observation.observedAt)}<br>${citation(observation.sourceIds)}` : ""}</div></div>`;
     }).join(""), FINANCIALS: financials + recentFinancials, CONSENSUS: consensusHtml, CHARTS: charts,
     INDICATORS: claims(report.indicators), DERIVATIVES: claims(report.derivatives), NARRATIVE: claims(report.narrative),
     NEWS: report.news.map((news) => `<p>${htmlEscape(news.title)}<br>${citation([news.sourceId])}</p>`).join("") || "<p>새로운 중요 자료 미확보.</p>",
@@ -270,11 +315,12 @@ export function inspectHtml(html: string): string[] {
     } catch (error: unknown) { errors.push(`Script/JSON: ${error instanceof Error ? error.message : String(error)}`); }
   }
   const ids: string[] = [];
-  function visit(node: DefaultTreeAdapterMap["node"]): void {
+  const nodes: DefaultTreeAdapterMap["node"][] = [document];
+  while (nodes.length) {
+    const node = nodes.pop(); if (!node) continue;
     if ("attrs" in node) for (const attribute of node.attrs) if (attribute.name === "id") ids.push(attribute.value);
-    if ("childNodes" in node) for (const child of node.childNodes) visit(child);
+    if ("childNodes" in node) nodes.push(...node.childNodes);
   }
-  visit(document);
   if (unique(ids).length !== ids.length) errors.push("Duplicate HTML ID");
   return errors;
 }
@@ -303,26 +349,4 @@ export function verify(input: unknown, html: string): Gate {
   return result.gate;
 }
 
-const isCli = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isCli) {
-  const [command, inputPath, outputPath] = process.argv.slice(2);
-  if (!["build", "verify"].includes(command ?? "") || !inputPath || !outputPath || resolve(inputPath) === resolve(outputPath) || resolve(inputPath) === `${resolve(outputPath)}.gate.json`) {
-    console.error("Usage: tsx docs/scripts/report.ts build|verify input.json output.html"); process.exitCode = 1;
-  } else {
-    const target = resolve(outputPath); const gatePath = `${target}.gate.json`;
-    mkdirSync(dirname(target), { recursive: true });
-    let gate: Gate;
-    try {
-      const input: unknown = JSON.parse(readFileSync(resolve(inputPath), "utf8"));
-      if (command === "build") {
-        const result = build(input); gate = result.gate;
-        if (result.html !== null) writeFileSync(target, result.html, "utf8");
-      } else gate = verify(input, readFileSync(target, "utf8"));
-    } catch (error: unknown) {
-      gate = { status: "FAIL", errors: [error instanceof Error ? error.message : String(error)], warnings: [], missingRequiredIds: [], inputSha256: "", outputSha256: null, verificationScope: "입력/출력 파일 읽기 실패" };
-    }
-    writeFileSync(gatePath, `${JSON.stringify(gate, null, 2)}\n`, "utf8");
-    console.log(JSON.stringify({ status: gate.status, errors: gate.errors, warnings: gate.warnings, gatePath }, null, 2));
-    if (gate.status === "FAIL") process.exitCode = 1;
-  }
-}
+if (process.argv[1] && pathsAlias(process.argv[1], fileURLToPath(import.meta.url))) process.exitCode = runCli(process.argv.slice(2), { build, verify, failedGate });

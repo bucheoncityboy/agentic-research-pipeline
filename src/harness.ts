@@ -8,6 +8,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { build, prepare, verify } from "../docs/scripts/report.js";
 import { type ResearchReport } from "../docs/scripts/schema.js";
 import { createFixture } from "./fixture.js";
+import { runEdgeCases } from "./edge-cases.js";
+import { runFileCases } from "./file-cases.js";
+import { runChartCases } from "./chart-cases.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 if (process.argv.includes("--write-fixture")) {
@@ -99,3 +102,4 @@ test("CLI writes gate and rejects modified output with nonzero exit", () => {
   const checked = spawnSync(process.execPath, [...args, "verify", inputPath, outputPath], { encoding: "utf8", cwd: root }); assert.equal(checked.status, 1); assert.match(checked.stdout, /FAIL/);
 });
 console.log(`${cases} behavioral checks passed.`);
+console.log(`${cases + runEdgeCases() + runFileCases() + runChartCases()} total behavioral checks passed.`);

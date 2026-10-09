@@ -106,23 +106,30 @@ a.news-card:hover{background:#f8fafc}
   var payload = document.getElementById('chart-data');
   if (!payload) return;
   var charts = JSON.parse(payload.textContent || '[]');
+  function fallback(canvas, message) {
+    var notice = document.createElement('p');
+    notice.textContent = message;
+    canvas.replaceWith(notice);
+  }
   charts.forEach(function (chart) {
     var canvas = document.getElementById(chart.id);
     if (!canvas) return;
     if (typeof Chart === 'undefined') {
-      var notice = document.createElement('p');
-      notice.textContent = '차트 라이브러리 미로드. 아래 근거 데이터 표를 확인하십시오.';
-      canvas.replaceWith(notice);
+      fallback(canvas, '차트 라이브러리 미로드. 아래 근거 데이터 표를 확인하십시오.');
       return;
     }
-    new Chart(canvas, {
-      type: chart.type,
-      data: chart.data,
-      options: {
-        responsive: true,
-        plugins: { title: { display: true, text: chart.title }, legend: { position: 'bottom' } }
-      }
-    });
+    try {
+      new Chart(canvas, {
+        type: chart.type,
+        data: chart.data,
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: chart.title }, legend: { position: 'bottom' } }
+        }
+      });
+    } catch (_) {
+      fallback(canvas, '차트를 표시하지 못했습니다. 아래 근거 데이터 표를 확인하십시오.');
+    }
   });
 })();
 </script>
