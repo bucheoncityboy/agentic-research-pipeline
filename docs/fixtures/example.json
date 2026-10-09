@@ -1,0 +1,926 @@
+{
+  "schemaVersion": "3.1",
+  "asOf": "2026-10-09T09:00:00+09:00",
+  "fixture": true,
+  "company": {
+    "name": "가상 기업 — 실행 검증용",
+    "ticker": "000000",
+    "market": "KRX-KOSPI",
+    "currency": "KRW",
+    "sector": "가상 산업",
+    "fiscalYearEnd": "12-31"
+  },
+  "sources": [
+    {
+      "id": "financial-source",
+      "name": "가상 연간 공시",
+      "url": "https://example.com/financials",
+      "publishedAt": "2026-02-02T09:00:00+09:00",
+      "collectedAt": "2026-10-09T09:00:00+09:00",
+      "locator": "가상 재무제표 표",
+      "excerpt": "테스트용 수치이며 실제 기업 공시가 아닙니다.",
+      "access": "direct"
+    },
+    {
+      "id": "market-source",
+      "name": "가상 시세·하우스 원문",
+      "url": "https://example.com/market",
+      "publishedAt": "2026-10-08T16:00:00+09:00",
+      "collectedAt": "2026-10-09T09:00:00+09:00",
+      "locator": "가상 시세·목표가 표",
+      "excerpt": "가상 목표가는 KB 44000, NH 61000, 유안타 60000이며 SK는 미확보입니다.",
+      "access": "direct"
+    }
+  ],
+  "observations": [
+    {
+      "id": "revenue.2023",
+      "label": "revenue",
+      "metric": "revenue",
+      "scope": "fixture-company",
+      "value": 100,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "operatingProfit.2023",
+      "label": "operatingProfit",
+      "metric": "operatingProfit",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "netIncome.2023",
+      "label": "netIncome",
+      "metric": "netIncome",
+      "scope": "fixture-company",
+      "value": 15,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "assets.2023",
+      "label": "assets",
+      "metric": "assets",
+      "scope": "fixture-company",
+      "value": 200,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "liabilities.2023",
+      "label": "liabilities",
+      "metric": "liabilities",
+      "scope": "fixture-company",
+      "value": 80,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "equity.2023",
+      "label": "equity",
+      "metric": "equity",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cash.2023",
+      "label": "cash",
+      "metric": "cash",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "debt.2023",
+      "label": "debt",
+      "metric": "debt",
+      "scope": "fixture-company",
+      "value": 60,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cfo.2023",
+      "label": "cfo",
+      "metric": "cfo",
+      "scope": "fixture-company",
+      "value": 35,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "capex.2023",
+      "label": "capex",
+      "metric": "capex",
+      "scope": "fixture-company",
+      "value": 10,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "revenue.2024",
+      "label": "revenue",
+      "metric": "revenue",
+      "scope": "fixture-company",
+      "value": 110,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "operatingProfit.2024",
+      "label": "operatingProfit",
+      "metric": "operatingProfit",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "netIncome.2024",
+      "label": "netIncome",
+      "metric": "netIncome",
+      "scope": "fixture-company",
+      "value": 15,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "assets.2024",
+      "label": "assets",
+      "metric": "assets",
+      "scope": "fixture-company",
+      "value": 200,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "liabilities.2024",
+      "label": "liabilities",
+      "metric": "liabilities",
+      "scope": "fixture-company",
+      "value": 80,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "equity.2024",
+      "label": "equity",
+      "metric": "equity",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cash.2024",
+      "label": "cash",
+      "metric": "cash",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "debt.2024",
+      "label": "debt",
+      "metric": "debt",
+      "scope": "fixture-company",
+      "value": 60,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cfo.2024",
+      "label": "cfo",
+      "metric": "cfo",
+      "scope": "fixture-company",
+      "value": 35,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "capex.2024",
+      "label": "capex",
+      "metric": "capex",
+      "scope": "fixture-company",
+      "value": 10,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "revenue.2025",
+      "label": "revenue",
+      "metric": "revenue",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "operatingProfit.2025",
+      "label": "operatingProfit",
+      "metric": "operatingProfit",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "netIncome.2025",
+      "label": "netIncome",
+      "metric": "netIncome",
+      "scope": "fixture-company",
+      "value": 15,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "assets.2025",
+      "label": "assets",
+      "metric": "assets",
+      "scope": "fixture-company",
+      "value": 200,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "liabilities.2025",
+      "label": "liabilities",
+      "metric": "liabilities",
+      "scope": "fixture-company",
+      "value": 80,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "equity.2025",
+      "label": "equity",
+      "metric": "equity",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cash.2025",
+      "label": "cash",
+      "metric": "cash",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "debt.2025",
+      "label": "debt",
+      "metric": "debt",
+      "scope": "fixture-company",
+      "value": 60,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cfo.2025",
+      "label": "cfo",
+      "metric": "cfo",
+      "scope": "fixture-company",
+      "value": 35,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "capex.2025",
+      "label": "capex",
+      "metric": "capex",
+      "scope": "fixture-company",
+      "value": 10,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "price",
+      "label": "price",
+      "metric": "price",
+      "value": 33700,
+      "scope": "fixture-company",
+      "unit": "KRW",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "market-source"
+      ]
+    },
+    {
+      "id": "target.kb",
+      "label": "target.kb",
+      "metric": "targetPrice",
+      "value": 44000,
+      "scope": "fixture-company",
+      "unit": "KRW",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "estimate",
+      "sourceIds": [
+        "market-source"
+      ]
+    },
+    {
+      "id": "target.nh",
+      "label": "target.nh",
+      "metric": "targetPrice",
+      "value": 61000,
+      "scope": "fixture-company",
+      "unit": "KRW",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "estimate",
+      "sourceIds": [
+        "market-source"
+      ]
+    },
+    {
+      "id": "target.yuanta",
+      "label": "target.yuanta",
+      "metric": "targetPrice",
+      "value": 60000,
+      "scope": "fixture-company",
+      "unit": "KRW",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "estimate",
+      "sourceIds": [
+        "market-source"
+      ]
+    },
+    {
+      "id": "target.sk",
+      "label": "target.sk",
+      "metric": "targetPrice",
+      "value": null,
+      "scope": "fixture-company",
+      "unit": "KRW",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "missing",
+      "sourceIds": [],
+      "reason": "가상 사례: 원문 목표가 미확보"
+    },
+    {
+      "id": "target.mean",
+      "label": "target.mean",
+      "metric": "targetPrice",
+      "value": null,
+      "scope": "fixture-company",
+      "unit": "KRW",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "estimate",
+      "sourceIds": [],
+      "formula": {
+        "operation": "mean",
+        "inputs": [
+          "target.kb",
+          "target.nh",
+          "target.yuanta",
+          "target.sk"
+        ]
+      }
+    },
+    {
+      "id": "upside",
+      "label": "upside",
+      "metric": "upside",
+      "value": null,
+      "scope": "fixture-company",
+      "unit": "%",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "estimate",
+      "sourceIds": [],
+      "formula": {
+        "operation": "upside",
+        "inputs": [
+          "target.mean",
+          "price"
+        ]
+      }
+    },
+    {
+      "id": "fcf.2025",
+      "label": "FCF",
+      "metric": "fcf",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "difference",
+        "inputs": [
+          "cfo.2025",
+          "capex.2025"
+        ]
+      }
+    }
+  ],
+  "priceId": "price",
+  "summaryIds": [
+    "price",
+    "target.mean",
+    "upside",
+    "fcf.2025"
+  ],
+  "financials": [
+    {
+      "fiscalYear": 2023,
+      "metrics": {
+        "revenue": "revenue.2023",
+        "operatingProfit": "operatingProfit.2023",
+        "netIncome": "netIncome.2023",
+        "assets": "assets.2023",
+        "liabilities": "liabilities.2023",
+        "equity": "equity.2023",
+        "cash": "cash.2023",
+        "debt": "debt.2023",
+        "cfo": "cfo.2023",
+        "capex": "capex.2023"
+      }
+    },
+    {
+      "fiscalYear": 2024,
+      "metrics": {
+        "revenue": "revenue.2024",
+        "operatingProfit": "operatingProfit.2024",
+        "netIncome": "netIncome.2024",
+        "assets": "assets.2024",
+        "liabilities": "liabilities.2024",
+        "equity": "equity.2024",
+        "cash": "cash.2024",
+        "debt": "debt.2024",
+        "cfo": "cfo.2024",
+        "capex": "capex.2024"
+      }
+    },
+    {
+      "fiscalYear": 2025,
+      "metrics": {
+        "revenue": "revenue.2025",
+        "operatingProfit": "operatingProfit.2025",
+        "netIncome": "netIncome.2025",
+        "assets": "assets.2025",
+        "liabilities": "liabilities.2025",
+        "equity": "equity.2025",
+        "cash": "cash.2025",
+        "debt": "debt.2025",
+        "cfo": "cfo.2025",
+        "capex": "capex.2025"
+      }
+    }
+  ],
+  "brokers": [
+    {
+      "name": "kb",
+      "targetId": "target.kb",
+      "opinion": "외부 BUY (가상)",
+      "sourceId": "market-source"
+    },
+    {
+      "name": "nh",
+      "targetId": "target.nh",
+      "opinion": "외부 BUY (가상)",
+      "sourceId": "market-source"
+    },
+    {
+      "name": "yuanta",
+      "targetId": "target.yuanta",
+      "opinion": "외부 BUY (가상)",
+      "sourceId": "market-source"
+    },
+    {
+      "name": "sk",
+      "targetId": "target.sk",
+      "opinion": "미확보",
+      "sourceId": "market-source"
+    }
+  ],
+  "consensusId": "target.mean",
+  "charts": [
+    {
+      "id": "target-chart",
+      "title": "가상 하우스별 목표가",
+      "type": "bar",
+      "labels": [
+        "kb",
+        "nh",
+        "yuanta",
+        "sk"
+      ],
+      "datasets": [
+        {
+          "label": "외부 목표가",
+          "observationIds": [
+            "target.kb",
+            "target.nh",
+            "target.yuanta",
+            "target.sk"
+          ]
+        }
+      ]
+    }
+  ],
+  "profile": [
+    {
+      "kind": "fact",
+      "text": "이 기업과 모든 수치는 실행 검증용 가상 자료입니다.",
+      "sourceIds": [
+        "financial-source"
+      ],
+      "literalTerms": []
+    }
+  ],
+  "narrative": [
+    {
+      "kind": "fact",
+      "text": "매출액은 {{obs:revenue.2025}}이며 영업이익은 {{obs:operatingProfit.2025}}입니다.",
+      "sourceIds": [],
+      "literalTerms": []
+    }
+  ],
+  "indicators": [],
+  "derivatives": [],
+  "debates": [
+    {
+      "title": "현금 창출의 지속성",
+      "bull": [
+        {
+          "kind": "interpretation",
+          "text": "영업현금흐름 {{obs:cfo.2025}}에서 CAPEX {{obs:capex.2025}}를 차감한 FCF는 {{obs:fcf.2025}}입니다.",
+          "sourceIds": [],
+          "caveat": "가상 사례입니다. 운전자본 회수 시점이 바뀌면 현금흐름도 달라집니다.",
+          "literalTerms": []
+        }
+      ],
+      "bear": []
+    }
+  ],
+  "news": [],
+  "calendar": [],
+  "conclusion": [
+    {
+      "kind": "interpretation",
+      "text": "확인 가능한 하우스 목표가의 평균은 {{obs:target.mean}}입니다. 미확보 목표가는 계산에서 제외했습니다.",
+      "sourceIds": [],
+      "caveat": "목표가는 외부 전망이며 실제 수익이나 적정가를 보장하지 않습니다.",
+      "literalTerms": []
+    }
+  ]
+}

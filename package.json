@@ -1,0 +1,14 @@
+{
+  "name": "agentic-research-pipeline",
+  "version": "3.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx src/harness.ts",
+    "example": "tsx docs/scripts/report.ts build docs/fixtures/example.json results/example.html"
+  },
+  "dependencies": { "parse5": "8.0.1", "zod": "4.6.5" },
+  "devDependencies": { "@types/node": "^22.0.0", "tsx": "^4.0.0", "typescript": "^5.0.0" }
+}
