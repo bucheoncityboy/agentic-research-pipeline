@@ -3,8 +3,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse, type DefaultTreeAdapterMap } from "parse5";
-import { build, prepare, verify } from "../docs/scripts/report.js";
-import type { ResearchReport, Observation } from "../docs/scripts/schema.js";
+import { build, prepare, verify } from "../.agents/skills/company-analysis-ra/scripts/report.js";
+import type { ResearchReport, Observation } from "../.agents/skills/company-analysis-ra/scripts/schema.js";
 
 type Node = DefaultTreeAdapterMap["node"];
 function text(node: Node): string {

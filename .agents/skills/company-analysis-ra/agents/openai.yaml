@@ -1,0 +1,4 @@
+interface:
+  display_name: "기업분석 RA"
+  short_description: "공시·IR 원문으로 기업을 조사하고 출처 있는 HTML 초안을 생성·검증"
+  default_prompt: "$company-analysis-ra로 요청한 기업의 공개 자료를 조사하고 출처와 기준시점이 있는 HTML 기업분석 초안을 생성·검증해줘."

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { Script } from "node:vm";
-import { build } from "../docs/scripts/report.js";
+import { build } from "../.agents/skills/company-analysis-ra/scripts/report.js";
 import { createFixture } from "./fixture.js";
 
 interface Config { type: string; data: { datasets: Array<{ data: Array<number | null>; spanGaps: boolean }> } }

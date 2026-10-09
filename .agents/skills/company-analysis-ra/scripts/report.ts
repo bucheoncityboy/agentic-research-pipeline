@@ -6,7 +6,7 @@ import { parse, type DefaultTreeAdapterMap } from "parse5";
 import { reportSchema, type ResearchReport, type Observation, type Claim, type Gate } from "./schema.js";
 import { pathsAlias, runCli } from "./files.js";
 
-const templatePath = fileURLToPath(new URL("../template.html", import.meta.url));
+const templatePath = fileURLToPath(new URL("../assets/template.html", import.meta.url));
 const hash = (value: string): string => createHash("sha256").update(value).digest("hex");
 const unique = (values: string[]): string[] => [...new Set(values)];
 const htmlEscape = (value: string): string => value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);

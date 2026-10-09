@@ -3,20 +3,21 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { relative, resolve, isAbsolute } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { build, prepare, verify } from "../docs/scripts/report.js";
-import { type ResearchReport } from "../docs/scripts/schema.js";
+import { build, prepare, verify } from "../.agents/skills/company-analysis-ra/scripts/report.js";
+import { type ResearchReport } from "../.agents/skills/company-analysis-ra/scripts/schema.js";
 import { createFixture } from "./fixture.js";
 import { runEdgeCases } from "./edge-cases.js";
 import { runFileCases } from "./file-cases.js";
 import { runChartCases } from "./chart-cases.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const skillRoot = resolve(root, ".agents/skills/company-analysis-ra");
 if (process.argv.includes("--write-fixture")) {
-  writeFileSync(resolve(root, "docs/fixtures/example.json"), `${JSON.stringify(createFixture(), null, 2)}\n`, "utf8");
+  writeFileSync(resolve(skillRoot, "fixtures/example.json"), `${JSON.stringify(createFixture(), null, 2)}\n`, "utf8");
 }
-const input: ResearchReport = JSON.parse(readFileSync(resolve(root, "docs/fixtures/example.json"), "utf8")) as ResearchReport;
+const input: ResearchReport = JSON.parse(readFileSync(resolve(skillRoot, "fixtures/example.json"), "utf8")) as ResearchReport;
 let cases = 0;
 function test(name: string, run: () => void): void { run(); cases++; console.log(`PASS ${name}`); }
 function fail(name: string, mutate: (report: ResearchReport) => void, expected: RegExp): void {
@@ -80,22 +81,25 @@ test("sum checks contiguous quarter periods", () => {
   observation(report, "q2").period.start = "2025-03-01"; assert.equal(build(report).gate.status, "FAIL");
 });
 test("template CSS is retained from reviewed design", () => {
-  const current = readFileSync(resolve(root, "docs/template.html"), "utf8");
+  const current = readFileSync(resolve(skillRoot, "assets/template.html"), "utf8");
   const css = /<style>([\s\S]*?)<\/style>/.exec(current)?.[1]?.replace(/\r/g, ""); assert.ok(css);
   assert.equal(createHash("sha256").update(css).digest("hex"), "613db431476b4a84a31b3f1acfde13229561c69635496839fa69cc5e741b8fd6");
 });
 test("skill references resolve within the shipped package", () => {
-  for (const path of ["docs/SKILL.md", "docs/references/data-contract.md", "docs/references/research.md"]) {
-    for (const match of readFileSync(resolve(root, path), "utf8").matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+  for (const path of ["SKILL.md", "references/data-contract.md", "references/research.md", "references/setup.md"]) {
+    for (const match of readFileSync(resolve(skillRoot, path), "utf8").matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
       const target = match[1]; assert.ok(target); if (/^https?:/.test(target)) continue;
-      assert.ok(existsSync(fileURLToPath(new URL(target, pathToFileURL(resolve(root, path))))), `${path}: missing ${target}`);
+      const targetPath = fileURLToPath(new URL(target, pathToFileURL(resolve(skillRoot, path))));
+      const withinSkill = relative(skillRoot, targetPath);
+      assert.ok(!withinSkill.startsWith("..") && !isAbsolute(withinSkill), `${path}: resource outside skill: ${target}`);
+      assert.ok(existsSync(targetPath), `${path}: missing ${target}`);
     }
   }
 });
 test("CLI writes gate and rejects modified output with nonzero exit", () => {
   const directory = mkdtempSync(resolve(tmpdir(), "company-ra-test-")); const inputPath = resolve(directory, "input.json"); const outputPath = resolve(directory, "output.html");
   writeFileSync(inputPath, JSON.stringify(input), "utf8");
-  const args = ["--import", "tsx", resolve(root, "docs/scripts/report.ts")];
+  const args = ["--import", "tsx", resolve(skillRoot, "scripts/report.ts")];
   const generated = spawnSync(process.execPath, [...args, "build", inputPath, outputPath], { encoding: "utf8", cwd: root }); assert.equal(generated.status, 0, generated.stderr + generated.stdout);
   const gate = JSON.parse(readFileSync(`${outputPath}.gate.json`, "utf8")) as { status: string }; assert.equal(gate.status, "PARTIAL");
   writeFileSync(outputPath, `${readFileSync(outputPath, "utf8")}\n</body>`, "utf8");

@@ -1,4 +1,4 @@
-import { type ResearchReport, type Observation } from "../docs/scripts/schema.js";
+import { type ResearchReport, type Observation } from "../.agents/skills/company-analysis-ra/scripts/schema.js";
 
 export function createFixture(): ResearchReport {
   const asOf = "2026-10-09T09:00:00+09:00";
