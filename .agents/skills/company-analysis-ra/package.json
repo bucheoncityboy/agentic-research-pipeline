@@ -1,0 +1,16 @@
+{
+  "name": "company-analysis-ra",
+  "version": "3.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsx scripts/report.ts build",
+    "verify": "tsx scripts/report.ts verify",
+    "example": "tsx scripts/report.ts build fixtures/example.json results/example.html"
+  },
+  "files": ["SKILL.md", "agents/", "scripts/", "references/", "assets/", "fixtures/", "npm-shrinkwrap.json", "tsconfig.json"],
+  "dependencies": { "parse5": "8.0.1", "zod": "4.6.5", "tsx": "^4.0.0" },
+  "devDependencies": { "@types/node": "^22.0.0", "typescript": "^5.0.0" }
+}

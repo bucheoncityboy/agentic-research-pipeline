@@ -7,8 +7,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "tsx src/harness.ts",
-    "example": "tsx docs/scripts/report.ts build docs/fixtures/example.json results/example.html",
-    "smoke:live": "tsx src/live-smoke.ts"
+    "example": "tsx .agents/skills/company-analysis-ra/scripts/report.ts build .agents/skills/company-analysis-ra/fixtures/example.json results/example.html",
+    "smoke:live": "tsx src/live-smoke.ts",
+    "smoke:portable": "tsx src/portable-smoke.ts",
+    "check:privacy": "tsx src/privacy-scan.ts",
+    "pack:skill": "npm pack ./.agents/skills/company-analysis-ra"
   },
   "dependencies": { "parse5": "8.0.1", "zod": "4.6.5" },
   "devDependencies": { "@types/node": "^22.0.0", "tsx": "^4.0.0", "typescript": "^5.0.0" }

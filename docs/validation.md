@@ -30,6 +30,20 @@
 - `npm run smoke:live`: 삼성전자 공식 페이지 3곳에서 원자료 숫자 13개를 수집하고 분기 합산·HTML 생성·재검증 연결 성공. 보고서는 미확보 계정을 명시한 PARTIAL.
 - `git diff --check`: 통과.
 
+## 스킬 폴더 이동 검증
+
+2026-10-10에 실행 패키지를 `.agents/skills/company-analysis-ra/`로 이동했다. 상위 저장소의 실행 파일·의존성 없이 폴더 전체를 복사해 사용할 수 있도록 스킬 전용 package.json, npm-shrinkwrap.json, tsconfig.json과 첫 실행 안내를 포함했다. npm 아카이브에서 package-lock.json이 제외되는 동작을 피하려고 배포 잠금 파일은 npm-shrinkwrap.json을 사용한다.
+
+- 저장소 `npm run typecheck`와 `tsx src/harness.ts`: 통과, 기존 87개 동작 검사 유지. 지침의 로컬 링크가 스킬 폴더 안에 머무는지도 확인.
+- skill-creator `quick_validate.py .agents/skills/company-analysis-ra`: 통과.
+- `npm run smoke:portable`: 저장소 밖 임시 디렉터리의 한글·공백 경로에 배포 파일만 복사한 뒤 `npm ci`, 스킬 타입 검사, 예제 생성·재검증 통과.
+- 같은 복사본에 `npm ci --omit=dev`를 실행하고 스킬 폴더 밖의 작업 위치에서 절대 경로로 생성·재검증 통과. 예제 gate는 오류 없는 PARTIAL.
+- `npm run pack:skill`: 배포 파일 13개가 있는 npm 아카이브 생성. 지침·템플릿·도구·첫 실행 안내·의존성 잠금 파일 포함, node_modules·결과물·저장소용 src 제외 확인.
+- 공유용 ZIP을 풀어 13개 파일의 SHA-256을 원본과 대조해 모두 일치함을 확인.
+- 경로 이동 후 `npm run smoke:live` 재실행: 공식 페이지 3곳·관측치 13개 수집, 생성·재검증 연결 성공. 보고서는 미확보 항목을 표시하는 PARTIAL.
+
+복사 검사에서 이 Windows / Node.js 25.2.1의 `fs.cpSync`가 디렉터리 복사 도중 비정상 종료되어, 검사 도구는 디렉터리를 순회하며 `copyFileSync`로 파일을 복사하도록 변경했다. 실제 스킬의 생성기에는 이 복사 코드가 포함되지 않는다. 다른 운영체제와 에이전트 앱의 스킬 등록 화면까지 실행한 검증은 아니다.
+
 원래 CSS는 정규화한 해시 `613db431476b4a84a31b3f1acfde13229561c69635496839fa69cc5e741b8fd6`와 같음을 harness에서 확인한다.
 
 ## 실제 자료 연결 검사의 범위

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { build, prepare } from "../docs/scripts/report.js";
-import type { ResearchReport, Observation } from "../docs/scripts/schema.js";
+import { build, prepare } from "../.agents/skills/company-analysis-ra/scripts/report.js";
+import type { ResearchReport, Observation } from "../.agents/skills/company-analysis-ra/scripts/schema.js";
 import { createFixture } from "./fixture.js";
-import { inspectHtml } from "../docs/scripts/report.js";
+import { inspectHtml } from "../.agents/skills/company-analysis-ra/scripts/report.js";
 
 const fresh = (): ResearchReport => { const report = createFixture(); report.fixture = false; return report; };
 const row = (report: ResearchReport, id: string): Observation => { const observation = report.observations.find((item) => item.id === id); assert.ok(observation); return observation; };

@@ -1,27 +1,54 @@
 # Agentic Research Pipeline
 
-한국 상장기업의 공개 자료를 조사하는 **기업분석 RA 에이전트 스킬**과, 조사 결과를 계산·검사해 HTML로 만드는 **TypeScript 파이프라인**입니다. 현재 버전은 **v3.1**입니다.
+**기업분석 RA 스킬을 폴더 하나로 가져가서 사용합니다.** 한국 상장기업의 공시·IR·증권사 원문을 조사하고, 근거를 구조화한 JSON으로 저장한 뒤 계산·검사·HTML 보고서 생성을 수행합니다. 현재 버전은 v3.1입니다.
 
-에이전트는 기업 공시·IR·증권사 원문을 찾고 사업과 실적을 분석합니다. 수집한 숫자를 `report.json`에 한 번 저장하면 코드가 계산하고 표·본문·차트에 같은 값을 사용합니다. 누락된 자료와 확인하지 못한 근거는 결과물에 드러냅니다.
+에이전트가 자료 조사와 해석을 맡고 TypeScript 도구가 계산과 출력 검증을 맡습니다. 모든 기업의 자료를 자동으로 가져오는 범용 수집기는 포함하지 않습니다. 실제 분석에는 검색·원문 접근·파일·터미널 도구를 갖춘 에이전트와 Node.js 20 이상, npm이 필요합니다.
 
-**지금 실행 가능한 범위는 구조화된 JSON부터 HTML 생성·재검증까지입니다.** 모든 기업의 자료를 자동으로 수집하는 범용 DART·KRX·컨센서스 수집기는 포함하지 않습니다. 실제 조사에는 검색·브라우저 등 자료 접근 도구를 갖춘 에이전트가 필요합니다.
+## 스킬 설치
 
-## 누가 무엇을 수행하는가
+1. [.agents/skills/company-analysis-ra/](.agents/skills/company-analysis-ra/) 폴더 전체를 복사합니다. Codex에서는 프로젝트의 `.agents/skills/` 또는 사용자 공통 `~/.agents/skills/` 아래에 넣습니다. 다른 앱은 해당 앱의 스킬 등록 위치를 사용합니다.
+2. 복사한 `company-analysis-ra/` 폴더에서 실행합니다.
 
-| 단계 | 수행 주체 | 결과 |
-| --- | --- | --- |
-| 기업·종목·기준시점 확인 | 에이전트 | 법인, 종목코드, 시장, 통화, 결산일, `asOf` |
-| 공시·IR·하우스 원문 수집 | 에이전트와 자료 접근 도구 | URL, 공개일, 수집시각, 표·페이지 위치, 근거 구절 |
-| 사업·재무·산업·쟁점 해석 | 에이전트 | 사실·외부 전망·해석을 구분한 문장 |
-| 단위·기간 정리와 입력 작성 | 에이전트 | 데이터 계약을 충족하는 `report.json` |
-| 계산·HTML 생성·출력 대조 | 제공된 TypeScript 코드 | HTML, 검사 결과 `.gate.json` |
-| 원문 인용·링크·화면·인쇄 검수 | 에이전트 또는 사용자 | 자동 검사 밖의 확인 기록 |
+```sh
+npm ci
+npm run example
+npm run verify -- "./fixtures/example.json" "./results/example.html"
+```
 
-기업명을 CLI에 넣으면 완성된 보고서가 나오는 구조는 아닙니다. 전체 조사 절차는 [docs/SKILL.md](docs/SKILL.md)에 있습니다.
+3. 스킬을 선택해 기업과 기준시점을 지정합니다. Codex CLI·IDE 예시:
 
-## 빠른 실행
+```text
+$company-analysis-ra로 삼성전자(005930)를 현재 수집 시점 기준으로 분석해줘.
+공시·IR·증권사 원문을 확인하고 실제 근거를 JSON에 저장한 뒤
+HTML 보고서 생성과 재검증까지 수행해줘. 미확보 자료는 사유를 표시해줘.
+```
 
-Node.js **20 이상**과 npm이 필요합니다. 아래 명령은 **저장소 루트**에서 실행합니다.
+스킬 폴더에는 지침·참고문서·실행 코드·템플릿·예제·의존성 잠금 파일이 모두 들어 있습니다. 상위 저장소는 필요하지 않습니다. `SKILL.md`만 복사하지 말고 폴더 전체를 옮깁니다. `node_modules/`는 대상 환경에서 새로 설치합니다.
+
+Windows PowerShell의 실행 정책 오류가 나면 `npm.cmd`와 `npx.cmd`를 사용합니다. 설치와 절대 경로 실행은 [첫 실행 안내](.agents/skills/company-analysis-ra/references/setup.md), 스킬 검색 위치와 호출 방식은 [OpenAI 공식 문서](https://learn.chatgpt.com/docs/build-skills)를 참고합니다.
+
+## 결과와 검증
+
+예제는 스킬 폴더 안에 `results/example.html`과 `results/example.html.gate.json`을 만듭니다. **예제의 숫자는 모두 가상**이며 결과가 `PARTIAL`인 것이 정상입니다. 실제 기업분석의 근거로 사용하지 않습니다.
+
+실제 분석 흐름은 기업·기준시점 확인 → 원문 수집 → 재무·산업·쟁점 분석 → JSON 저장 → HTML 생성 → 원문·화면 검수입니다. 숫자는 한 번 저장하고 표·본문·차트에서 같은 관측치 ID를 참조합니다. 확인하지 못한 자료는 임의 값으로 채우지 않습니다.
+
+| 검사 상태 | 의미 |
+| --- | --- |
+| `PASS` | 자동 데이터 계약·계산·출력 검사를 통과 |
+| `PARTIAL` | 생성 가능하지만 결측치·확인 필요 사항이 있음 |
+| `FAIL` | 입력·시점·계산·참조·출력 오류를 수정해야 함 |
+
+`PASS`도 원문 진위나 분석 완결성을 보증하지 않습니다. 핵심 근거와 화면·인쇄 배치는 별도로 확인합니다. HTML을 직접 수정하면 재검증에 실패하므로 JSON이나 템플릿을 수정한 뒤 다시 생성합니다. 실패한 생성 뒤 남아 있는 과거 HTML을 이번 결과로 전달하지 않습니다.
+
+- [분석 지침](.agents/skills/company-analysis-ra/SKILL.md)
+- [입력 데이터 계약](.agents/skills/company-analysis-ra/references/data-contract.md)
+- [자료 수집 기준](.agents/skills/company-analysis-ra/references/research.md)
+- [CLI와 검사 결과 상세](docs/usage.md)
+
+## 저장소 개발과 배포
+
+저장소 전체를 내려받아 개발하거나 검사하려면 루트에서 실행합니다.
 
 ```sh
 git clone https://github.com/bucheoncityboy/agentic-research-pipeline.git
@@ -32,117 +59,40 @@ npx --no-install tsx src/harness.ts
 npm run example
 ```
 
-Windows PowerShell에서 npm 실행 정책 오류가 나면 `npm.cmd`와 `npx.cmd`를 사용합니다.
+루트의 `npm run example` 결과는 루트 `results/`에 저장합니다. 스킬 폴더에서 실행했을 때의 `results/`와 위치가 다릅니다.
 
-생성 파일은 `results/example.html`과 `results/example.html.gate.json`입니다. 입력인 [docs/fixtures/example.json](docs/fixtures/example.json)은 **모든 숫자가 가상인 실행 예제**입니다. 결과는 가상 자료임을 표시하는 `PARTIAL`이며 실제 기업의 실적이나 투자 판단에 사용하지 않습니다. `results/`는 Git에 저장하지 않습니다.
+| 명령 | 용도 |
+| --- | --- |
+| `npm run smoke:portable` | 저장소 밖 사본의 새 설치·생성·재검증·배포 구성 검사 |
+| `npm run smoke:live` | 삼성전자 공식 페이지 3곳의 수집·계산·생성 연결 검사 |
+| `npm run check:privacy` | 현재 파일·Git 이력·PDF 본문과 메타데이터의 민감정보 후보 검사 |
+| `npm run pack:skill` | 스킬 전용 `company-analysis-ra-3.1.0.tgz` 생성 |
 
-## 실제 기업 분석에 사용하기
+npm 아카이브를 풀면 나오는 `package/`를 `company-analysis-ra/`로 바꿔 설치합니다. 폴더 전체를 ZIP으로 전달해도 됩니다. 배포 패키지에는 개발용 `src/`, 구버전 보고서, 설치된 의존성, 생성 결과가 포함되지 않습니다.
 
-1. [스킬 지침](docs/SKILL.md)으로 기업과 정보 기준시각을 확정합니다.
-2. [수집 기준](docs/references/research.md)에 따라 공시·IR·외부 원문을 확인합니다.
-3. [데이터 계약](docs/references/data-contract.md)과 [전체 입력 예제](docs/fixtures/example.json)를 참고해 실제 근거를 `report.json`에 저장합니다. 실제 기업은 `fixture: false`로 설정합니다.
-4. 생성하고 같은 입력으로 재검증합니다.
+`check:privacy`의 PDF 검사는 `pdftotext`와 `pdfinfo`가 필요합니다. 검사 도구는 후보의 위치와 종류만 기록하고 발견한 값은 출력하지 않습니다.
 
-```sh
-npx --no-install tsx docs/scripts/report.ts build "./report.json" "./results/company.html"
-npx --no-install tsx docs/scripts/report.ts verify "./report.json" "./results/company.html"
+## 파일 구성
+
+```text
+.agents/skills/company-analysis-ra/  복사·배포하는 완전한 스킬
+  SKILL.md                         분석 지침
+  agents/                          스킬 선택 화면 정보
+  scripts/                         스키마·계산·렌더링·검증
+  references/                      수집·입력·첫 실행 안내
+  assets/                          HTML 템플릿
+  fixtures/                        가상 입력 예제
+  package.json / npm-shrinkwrap.json
+  tsconfig.json
+src/                               개발용 동작·연결·개인정보 검사
+docs/                              사용법·검수 기록
+archive/v3.0/                      검증 전 구버전 자료 한 벌
 ```
 
-상대 경로는 현재 작업 디렉터리 기준입니다. 공백이 있는 경로는 따옴표로 감쌉니다. 입력은 UTF-8 JSON이며 BOM이 있어도 읽습니다. 입력 JSON, 출력 HTML, 검사 로그는 서로 다른 파일이어야 합니다. 같은 파일을 가리키는 대소문자·심볼릭 링크·하드링크 별칭도 거부합니다.
+검수 환경은 Windows / Node.js 25.2.1입니다. 기존 87개 동작 검사, 폴더 이동 후 독립 설치·실행, 공식 페이지 연결 검사를 확인했습니다. 다른 운영체제 전체 조합과 실제 브라우저 캔버스·모바일·인쇄 배치를 검증한 것은 아닙니다. 차트는 Chart.js 4.5.1 CDN을 사용하고 로드 실패 시 동일 데이터 표를 안내합니다.
 
-입력에서 중요한 규칙은 다음과 같습니다.
+[검수 기록](docs/validation.md), [개인정보 점검 범위와 결과](docs/privacy-review.md), [구버전 자료 안내](archive/v3.0/README.md)를 참고합니다.
 
-- **숫자와 근거:** `observations`에 숫자 또는 `null`을 저장하고 단위·계정·회계 범위·기간·관측시각·출처 ID를 연결합니다. `"33,700"` 같은 표시 문자열은 허용하지 않습니다.
-- **3대 재무제표:** 최근 완료된 연속 3개 회계연도의 매출·영업이익·순이익·자산·부채·자본·현금·차입금·CFO·CAPEX ID를 연결합니다. 미확보 계정도 삭제하지 않고 `null`, `missing`, 사유를 남깁니다.
-- **시점과 상태:** 실제·잠정·전망을 구분합니다. 공개일을 모르면 `publishedAt: null`로 남깁니다. 공개일을 지어내거나 나중에 공개된 자료를 과거 분석에 넣지 않습니다.
-- **계산:** 평균·합계·차감·비율은 `formula`와 입력 ID로 정의합니다. 계산 전 값은 `null`, 출처 목록은 빈 배열입니다. 코드가 결과·출처·실제/잠정/전망 상태를 채웁니다.
-- **표·본문·차트:** 표와 차트는 관측치 ID를 사용합니다. 문장 속 수치는 `{{obs:revenue.2025}}`처럼 참조합니다. 경제 수치를 문장에 직접 다시 적으면 검사에서 실패합니다.
-- **분석 문장:** 사실, 출처가 있는 외부 전망, 조건·반대 증거가 있는 해석으로 나눕니다. 에이전트의 매수·매도·비중 조절 제언은 넣지 않습니다.
-
-## 검사 결과를 읽는 방법
-
-| 상태 | 의미 | 처리 |
-| --- | --- | --- |
-| `PASS` | 자동 데이터 계약·계산·렌더링 검사를 통과 | 원문 대조와 화면 검수 후 전달 |
-| `PARTIAL` | 치명적 오류는 없지만 결측치·확인 필요 사항이 있음 | 부분 초안으로 전달하고 사유·다음 수집 항목을 명시 |
-| `FAIL` | 스키마·시점·계산·참조·출력 또는 파일 처리 오류 | 오류를 수정한 뒤 다시 실행 |
-
-`PASS`와 `PARTIAL`의 CLI 종료 코드는 `0`, `FAIL`은 `1`입니다. 완전한 자료가 필요한 후속 작업은 종료 코드와 함께 `.gate.json`의 `status`도 확인해야 합니다.
-
-검사 로그에는 `errors`, `warnings`, `missingRequiredIds`, 입력·출력 SHA-256과 검사 범위가 기록됩니다. 필수 재무·주가 결측, 요약 결측, 공개일 미확인, 기준시점 당일의 공개시각 미확인, 오래된 시세, 가상 입력은 `PARTIAL` 사유입니다. 시세의 4일 초과 경고는 최신 거래일·휴장 여부를 다시 확인하라는 신호이며 거래소 캘린더 검증을 대신하지 않습니다.
-
-`build`는 검사에 실패하면 새 HTML을 쓰지 않고 `FAIL` 로그를 기록합니다. 기존 HTML이 있으면 남아 있으므로 **실패 후 남은 파일을 이번 생성 결과로 전달하지 않습니다.** 경로 충돌·권한 오류 등 로그 자체를 쓸 수 없는 경우에는 표준 오류의 `FAIL`과 종료 코드로 확인합니다.
-
-성공 출력은 임시 파일을 준비한 뒤 교체하며, 로그 교체가 실패하면 기존 HTML을 복구하도록 처리합니다. HTML과 로그를 하나의 파일시스템 트랜잭션으로 묶지는 않으므로 프로세스 강제 종료·동시 실행까지 보장하지 않습니다. 같은 출력 경로에서 여러 작업을 동시에 실행하지 않습니다.
-
-`verify`는 원본 입력과 현재 템플릿에서 다시 만든 HTML을 전달할 HTML과 대조합니다. 숫자·차트·본문을 HTML에서 직접 수정하면 `FAIL`입니다. 수정은 JSON이나 템플릿에 반영한 뒤 `build`부터 다시 실행합니다. `verify`의 `outputWritten: false`는 HTML을 수정하지 않았다는 의미이며 성공 여부는 `status`로 판단합니다.
-
-## 확인한 동작과 남은 검수
-
-검수 환경은 **Windows / Node.js 25.2.1**입니다. `npm run typecheck`와 `tsx src/harness.ts`에서 **87개 동작 검사**를 통과했습니다. 다른 운영체제·Node 버전 전체 조합을 실행한 것은 아닙니다.
-
-수정한 실패 조건과 실행 기록은 [검수 기록](docs/validation.md)에 정리했습니다.
-
-| 검사 묶음 | 확인한 조건 |
-| --- | --- |
-| 입력·출처·시점 | 잘못된 JSON·순환 객체·BigInt, 공개일 미확인, 미래 자료, 출처 ID 오류 |
-| 재무·계산 | 연결/별도·단위·기간 혼합, 결산일·윤년, 회계 항등식, 결측 평균, 0 분모, 잘못된 컨센서스, 음수 CAPEX |
-| 경계값·의존성 | 안전 범위 초과 숫자, 작은 소수 표시, 계산 순서 변경, 5,000단계 의존성, 계산 순환 |
-| 출력·파일 | HTML 변조, 문자 이스케이프, UTF-8 BOM·공백·한글 경로, 링크·대소문자 충돌, 이전 출력 보존 |
-| 차트 초기화 | 관측치 배열과 null 전달, 라이브러리 미로딩·개별 초기화 실패·누락 요소 처리 |
-
-차트 초기화 검사는 모의 DOM과 Chart 객체를 사용하는 JavaScript 단위 검사입니다. **실제 브라우저의 캔버스 렌더링·모바일 화면·인쇄 배치를 검증한 것은 아닙니다.** 이번 검수에서는 브라우저 보안정책이 로컬 HTML 열기를 차단해 화면 검수를 완료하지 못했습니다.
-
-HTML은 Chart.js **4.5.1 CDN**을 사용합니다. 라이브러리가 로드되지 않거나 개별 차트 초기화가 실패하면 안내와 함께 같은 데이터의 표를 확인할 수 있습니다. 원래 템플릿 CSS는 유지하며 해시 검사로 확인합니다.
-
-자동 검사는 원문 내용의 진위, 인용의 정확성, 회계 조정의 적절성, 외부 URL의 현재 응답, 분석의 완결성을 보증하지 않습니다. 분석 항목이 비어 있거나 계정 정의가 잘못 수집된 경우에는 스킬의 원문 대조 단계에서 확인해야 합니다.
-
-## 실제 자료 연결 검사
-
-네트워크를 사용하는 별도 검사는 다음과 같습니다.
-
-```sh
-npm run smoke:live
-```
-
-[src/live-smoke.ts](src/live-smoke.ts)는 삼성전자 공식 페이지 **3곳**에서 연간 손익 9개와 분기 손익 4개를 읽어, JSON 작성 → 분기 합산 → HTML 생성 → 재검증을 실행합니다. 현재 대상은 Facts & Figures의 2023~2025년 표, 2026년 1분기 실적, 2026년 2분기 잠정실적 페이지입니다. 네트워크 오류·연도·단위·페이지 구조 변경은 실패로 처리하며 임의 값으로 대체하지 않습니다.
-
-결과는 `results/live-smoke/`에 저장합니다.
-
-| 파일 | 내용 |
-| --- | --- |
-| `input.json` | 실제 수집 근거와 구조화된 입력 |
-| `report.html` | 부분 입력으로 만든 HTML |
-| `report.html.gate.json` | 파이프라인 검사 결과 |
-| `fetch-status.json` | 접근·추출 성공 여부 또는 실패 이유 |
-
-이 검사는 재무상태·현금흐름·시세·하우스 목표가를 모두 수집하지 않으므로 보고서 결과는 `PARTIAL`입니다. `fetch-status.json`의 `PASS`는 해당 수집·연결 검사의 성공을 뜻합니다. 완성된 삼성전자 분석이나 모든 업종의 수집 성공을 뜻하지 않습니다. 실패하면 이전 결과가 남을 수 있으므로 이번 실행의 종료 코드와 상태 파일을 확인합니다. 대상 연도가 바뀌면 URL·기간과 추출 규칙을 함께 갱신해야 합니다.
-
-## 스킬 배포와 파일 구성
-
-다른 환경에서 사용할 때는 **`docs/` 전체와 루트 `package.json`, `package-lock.json`**을 함께 제공하고 그 패키지 루트에서 `npm ci`를 실행합니다. `SKILL.md`만 복사하면 계산·렌더링 도구를 실행할 수 없습니다. 유지보수 검사를 실행하려면 `src/`와 `tsconfig.json`도 포함합니다. 에이전트 앱의 스킬 등록·자료 접근 도구 설정은 해당 환경에서 수행합니다.
-
-| 경로 | 역할 |
-| --- | --- |
-| `docs/SKILL.md` | 에이전트 지침 |
-| `docs/references/` | 데이터 계약·수집·회계·섹터 기준 |
-| `docs/scripts/schema.ts` | 런타임 스키마와 TypeScript 타입 |
-| `docs/scripts/report.ts` | 계산·렌더링·재검증 |
-| `docs/scripts/files.ts` | CLI·경로 검사·출력 저장 |
-| `docs/template.html` | 공통 HTML·CSS·차트 초기화 |
-| `docs/fixtures/example.json` | 가상 전체 입력 |
-| `src/harness.ts` | 전체 동작 검사 진입점 |
-| `src/edge-cases.ts`, `src/file-cases.ts`, `src/chart-cases.ts` | 데이터·파일·차트 경계 조건 |
-| `src/live-smoke.ts` | 공식 페이지 3곳 연결 검사 |
-
-`npm test`는 `tsx src/harness.ts`와 같은 검사입니다. 스킬·스키마·렌더러를 수정할 때 타입 검사와 harness를 실행합니다. 수집 스크립트를 수정하면 실제 자료 연결 검사도 실행합니다.
-
-## 구버전 자료
-
-`examples/`와 `sample_output/`의 HTML·PDF는 **검증 전 v3.0 기록**입니다. 새 입력 계약으로 재검증된 결과물이 아닙니다. 구버전 삼성 JSON의 문자열 플레이스홀더는 v3.1 입력과 호환되지 않으며 자동 변환기도 제공하지 않습니다. 원문부터 다시 수집해 새 계약으로 옮겨야 합니다.
-
-`docs/company_analysis_architecture_v3.png` 역시 과거 구조도입니다. 현재 실행 흐름은 이 README와 `docs/SKILL.md`를 따릅니다.
-
-## License
+## 이용 조건
 
 내부 연구용. 상업적 재배포 시 원저작자 연락 요망.

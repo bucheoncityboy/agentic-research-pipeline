@@ -10,7 +10,7 @@ export function runFileCases(): number {
   const root = fileURLToPath(new URL("..", import.meta.url));
   const directory = mkdtempSync(resolve(tmpdir(), "company-ra-files-"));
   const inputPath = resolve(directory, "input.json"); const text = JSON.stringify(createFixture()); writeFileSync(inputPath, text, "utf8");
-  const invoke = (command: string, input: string, output: string) => spawnSync(process.execPath, ["--import", "tsx", resolve(root, "docs/scripts/report.ts"), command, input, output], { cwd: root, encoding: "utf8" });
+  const invoke = (command: string, input: string, output: string) => spawnSync(process.execPath, ["--import", "tsx", resolve(root, ".agents/skills/company-analysis-ra/scripts/report.ts"), command, input, output], { cwd: root, encoding: "utf8" });
   let cases = 0;
   const check = (name: string, run: () => void): void => { run(); cases++; console.log(`PASS files: ${name}`); };
   check("UTF-8 BOM and spaces in output path", () => { const bom = resolve(directory, "bom.json"); writeFileSync(bom, `\uFEFF${text}`, "utf8"); const output = resolve(directory, "folder with spaces", "기업 분석.html"); const result = invoke("build", bom, output); assert.equal(result.status, 0, result.stderr + result.stdout); assert.match(readFileSync(output, "utf8"), /Company Analysis RA/); });

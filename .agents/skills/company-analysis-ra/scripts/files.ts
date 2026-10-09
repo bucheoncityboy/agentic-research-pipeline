@@ -53,7 +53,7 @@ function writePair(outputPath: string, gatePath: string, html: string | null, ga
 export function runCli(args: string[], engine: Engine): number {
   const [command, inputPath, outputPath] = args;
   if (args.length !== 3 || !["build", "verify"].includes(command ?? "") || !inputPath || !outputPath) {
-    console.error("Usage: tsx docs/scripts/report.ts build|verify input.json output.html"); return 1;
+    console.error("Usage: npm run build|verify -- input.json output.html (from the skill folder)"); return 1;
   }
   try {
     const inputFile = resolve(inputPath); const outputFile = resolve(outputPath); const gatePath = `${outputFile}.gate.json`;
