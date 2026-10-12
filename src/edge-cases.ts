@@ -90,17 +90,17 @@ export function runEdgeCases(probe = false): number {
   });
   check("small nonzero observations must not display as zero", () => {
     const report = fresh(); report.observations.push({ ...row(report, "price"), id: "tiny", metric: "ratio", unit: "%", value: 0.00003 }); report.summaryIds.push("tiny");
-    const result = build(report); assert.ok(result.html); assert.match(result.html, /data-observation-id="tiny">0\.00003 %/);
+    const result = build(report); assert.ok(result.html); assert.match(result.html, /data-observation-id="tiny"[^>]*>0\.00003 %/);
   });
   check("raw decimal precision, safe integers and tiny derived values remain visible", () => {
     const report = fresh(); const base = row(report, "price");
     report.observations.push({ ...base, id: "decimal", value: 1.23456789 }, { ...base, id: "microscopic", value: 1e-25 }, { ...base, id: "safe-integer", value: Number.MAX_SAFE_INTEGER }, { ...base, id: "denominator", value: 1 }, { ...base, id: "tiny-derived", value: null, unit: "%", sourceIds: [], formula: { operation: "ratio-percent", inputs: ["microscopic", "denominator"] } });
     report.summaryIds.push("decimal", "microscopic", "safe-integer", "tiny-derived");
     const result = build(report); assert.ok(result.html);
-    assert.match(result.html, /data-observation-id="decimal">1\.23456789 KRW/);
-    assert.match(result.html, /data-observation-id="microscopic">1e-25 KRW/);
-    assert.match(result.html, /data-observation-id="safe-integer">9,007,199,254,740,991 KRW/);
-    assert.match(result.html, /data-observation-id="tiny-derived">1\.0000e-23 %/);
+    assert.match(result.html, /data-observation-id="decimal"[^>]*>1\.23456789 KRW/);
+    assert.match(result.html, /data-observation-id="microscopic"[^>]*>1e-25 KRW/);
+    assert.match(result.html, /data-observation-id="safe-integer"[^>]*>9,007,199,254,740,991 KRW/);
+    assert.match(result.html, /data-observation-id="tiny-derived"[^>]*>1\.0000e-23 %/);
   });
   reject("external consensus cannot be a market price instead of a target", (report) => { report.consensusId = "price"; });
   reject("annual financials cannot declare market accounting basis", (report) => { for (const observation of report.observations) if (observation.basis === "consolidated") observation.basis = "market"; });

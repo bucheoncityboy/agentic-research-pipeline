@@ -5,6 +5,7 @@ import { Script } from "node:vm";
 import { parse, type DefaultTreeAdapterMap } from "parse5";
 import { reportSchema, type ResearchReport, type Observation, type Claim, type Gate } from "./schema.js";
 import { pathsAlias, runCli } from "./files.js";
+import { financialDisplay, renderFinancials } from "./financials.js";
 
 const templatePath = fileURLToPath(new URL("../assets/template.html", import.meta.url));
 const hash = (value: string): string => createHash("sha256").update(value).digest("hex");
@@ -18,7 +19,6 @@ const format = (observation: Observation): string => {
 };
 const statusLabels = { actual: "실제", preliminary: "잠정", estimate: "전망", missing: "미확보", "not-applicable": "미적용" };
 const financialKeys = ["revenue", "operatingProfit", "netIncome", "assets", "liabilities", "equity", "cash", "debt", "cfo", "capex"] as const;
-const financialLabels = ["매출액", "영업이익", "당기순이익", "자산", "부채", "자본", "현금", "이자부 차입금", "영업현금흐름", "CAPEX"];
 const kinds = { fact: "사실", "external-view": "외부 전망", interpretation: "에이전트 해석" };
 const tokenPattern = /\{\{obs:([a-zA-Z][a-zA-Z0-9_.-]*)\}\}/g;
 const tradeAction = /(?:매수|매도)\s*(?:추천|기회|진입)|분할\s*매수|적극적\s*매수|비중\s*(?:확대|축소|조절)|손절|목표\s*수익|수익\s*보장/;
@@ -248,45 +248,47 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
 export function render(report: ResearchReport, gate: Gate, template = readFileSync(templatePath, "utf8")): string {
   const observations = new Map(report.observations.map((observation) => [observation.id, observation]));
   const sources = new Map(report.sources.map((source) => [source.id, source]));
+  const sourceNumbers = new Map(report.sources.map((source, index) => [source.id, index + 1]));
   const citation = (ids: string[]): string => unique(ids).map((sourceId) => {
     const source = sources.get(sourceId); if (!source) throw new Error(`Unknown source: ${sourceId}`);
-    return `<a href="${htmlEscape(source.url)}" target="_blank" rel="noopener noreferrer" title="${htmlEscape(source.locator)}">${htmlEscape(source.name)} · ${htmlEscape(source.publishedAt ?? "공개일 미확인")}</a>`;
-  }).join(" · ");
+    return `<a class="citation" href="#source-${htmlEscape(source.id)}" title="${htmlEscape(`${source.name} · ${source.publishedAt ?? "공개일 미확인"} · ${source.locator}`)}" aria-label="출처 ${sourceNumbers.get(sourceId)}: ${htmlEscape(source.name)}">[${sourceNumbers.get(sourceId)}]</a>`;
+  }).join(" ");
   const value = (observationId: string): string => {
     const observation = observations.get(observationId); if (!observation) throw new Error(`Unknown observation: ${observationId}`);
-    return `<span data-observation-id="${htmlEscape(observationId)}">${htmlEscape(format(observation))}</span>${["estimate", "preliminary", "not-applicable"].includes(observation.status) ? `<small> [${statusLabels[observation.status]}]</small>` : ""}`;
+    const display = observation.basis !== "market" ? financialDisplay(observation.unit) : { unit: observation.unit, divisor: 1 };
+    const displayed = observation.value === null ? null : observation.value / display.divisor;
+    const rounded = displayed === null ? "" : new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format(displayed);
+    const shown = display.divisor === 1 || displayed === null ? format(observation) : `${displayed !== 0 && /^-?0$/.test(rounded) ? displayed.toExponential(2) : rounded} ${display.unit}`;
+    return `<span data-observation-id="${htmlEscape(observationId)}" title="${htmlEscape(format(observation))}">${htmlEscape(shown)}</span>${["estimate", "preliminary", "not-applicable"].includes(observation.status) ? `<small class="value-status"> [${statusLabels[observation.status]}]</small>` : ""}`;
   };
   const claims = (items: Claim[]): string => items.length ? `<ul>${items.map((claim) => {
     const text = htmlEscape(claim.text).replace(tokenPattern, (_, observationId: string) => value(observationId));
     const observationSources = [...`${claim.text} ${claim.caveat ?? ""}`.matchAll(tokenPattern)].flatMap((match) => observations.get(match[1] ?? "")?.sourceIds ?? []);
     const caveat = claim.caveat ? htmlEscape(claim.caveat).replace(tokenPattern, (_, observationId: string) => value(observationId)) : "";
-    return `<li><strong>[${kinds[claim.kind]}${claim.attribution ? ` · ${htmlEscape(claim.attribution)}` : ""}]</strong> ${text}<br><small>${citation([...claim.sourceIds, ...observationSources])}${caveat ? `<br>조건·반대 증거: ${caveat}` : ""}</small></li>`;
-  }).join("")}</ul>` : "<p>확인 자료 없음. 추가 수집 필요.</p>";
-  const financials = `<table><tr><th>항목</th>${report.financials.map((row) => `<th>FY ${row.fiscalYear}</th>`).join("")}</tr>${financialKeys.map((key, index) => `<tr><td>${financialLabels[index]}</td>${report.financials.map((row) => {
-    const observation = observations.get(row.metrics[key]);
-    return `<td>${value(row.metrics[key])}<br><small>${observation ? `${statusLabels[observation.status]} · ${htmlEscape(observation.basis)} · ${htmlEscape(observation.period.start)}~${htmlEscape(observation.period.end)}<br>${citation(observation.sourceIds)}` : ""}</small></td>`;
-  }).join("")}</tr>`).join("")}</table>`;
-  const annualIds = new Set(report.financials.flatMap((row) => Object.values(row.metrics)));
-  const recentRows = report.observations.filter((observation) => !annualIds.has(observation.id) && financialKeys.includes(observation.metric as typeof financialKeys[number]));
-  const recentFinancials = recentRows.length ? `<h3>추가 분기·누적·시점 재무</h3><table><tr><th>항목</th><th>값</th><th>기간·기준</th><th>상태·원문</th></tr>${recentRows.map((observation) => `<tr><td>${htmlEscape(observation.label)}</td><td>${value(observation.id)}</td><td>${htmlEscape(observation.period.kind)} · ${htmlEscape(observation.period.start)}~${htmlEscape(observation.period.end)} · ${htmlEscape(observation.basis)}</td><td>${statusLabels[observation.status]}<br>${citation(observation.sourceIds)}</td></tr>`).join("")}</table>` : "<p>추가 분기·누적 재무는 아직 수집되지 않았습니다.</p>";
+    return `<li><span class="claim-kind ${claim.kind}">${kinds[claim.kind]}${claim.attribution ? ` · ${htmlEscape(claim.attribution)}` : ""}</span><p>${text} <span class="claim-citations">${citation([...claim.sourceIds, ...observationSources])}</span></p>${caveat ? `<p class="claim-caveat">조건·반대 증거: ${caveat}</p>` : ""}</li>`;
+  }).join("")}</ul>` : "<p class=\"empty-state\">확인 자료 없음. 추가 수집 필요.</p>";
+  const financials = renderFinancials(report, { escape: htmlEscape, citation });
   const brokerTable = report.brokers.length ? `<table><tr><th>하우스</th><th>외부 투자의견</th><th>목표가</th><th>원문</th></tr>${report.brokers.map((broker) => `<tr><td>${htmlEscape(broker.name)}</td><td>${htmlEscape(broker.opinion)}</td><td>${value(broker.targetId)}</td><td>${citation([broker.sourceId])}</td></tr>`).join("")}</table>` : "<p>하우스별 원문 미확보.</p>";
   const consensus = report.consensusId ? observations.get(report.consensusId) : undefined;
   const validTargets = report.brokers.filter((broker) => observations.get(broker.targetId)?.value !== null).length;
-  const consensusHtml = `${brokerTable}${consensus ? `<p>${consensus.formula ? "직접 집계 평균" : "외부 제공 컨센서스"}: ${value(consensus.id)} · 유효 목표가 ${validTargets}개 / 표시 하우스 ${report.brokers.length}개<br>${citation(consensus.sourceIds)}</p>` : "<p>컨센서스 미확보.</p>"}`;
+  const consensusHtml = `${brokerTable}${consensus?.value !== null && consensus ? `<p>${consensus.formula ? "직접 집계 평균" : "외부 제공 컨센서스"}: ${value(consensus.id)} · 유효 목표가 ${validTargets}개 / 표시 하우스 ${report.brokers.length}개<br>${citation(consensus.sourceIds)}</p>` : `<p class="empty-state">컨센서스 미확보.${consensus?.reason ? ` ${htmlEscape(consensus.reason)}` : ""}</p>`}`;
+  const palette = ["#183e63", "#1b8077", "#ad7939", "#8996a5", "#b65b55"];
   const chartData = report.charts.map((chart) => ({
     id: chart.id, type: chart.type, title: chart.title,
-    data: { labels: chart.labels, datasets: chart.datasets.map((dataset) => ({ label: dataset.label, data: dataset.observationIds.map((observationId) => observations.get(observationId)?.value ?? null), observationIds: dataset.observationIds, borderColor: "#1a3a5c", backgroundColor: chart.type === "doughnut" ? ["#c9a84c", "#1a3a5c", "#64748b", "#94a3b8", "#e5e7eb"] : "rgba(26,58,92,0.15)", spanGaps: false })) },
+    display: (() => { const row = observations.get(chart.datasets[0]?.observationIds[0] ?? ""); return row?.basis === "market" ? { unit: row.unit, divisor: 1 } : financialDisplay(row?.unit ?? ""); })(),
+    data: { labels: chart.labels, datasets: chart.datasets.map((dataset, index) => ({ label: dataset.label, data: dataset.observationIds.map((observationId) => observations.get(observationId)?.value ?? null), observationIds: dataset.observationIds, borderColor: palette[index % palette.length], backgroundColor: chart.type === "doughnut" ? palette : `${palette[index % palette.length]}${chart.type === "line" ? "22" : "cf"}`, borderWidth: 2, pointRadius: 3, spanGaps: false })) },
   }));
-  const charts = report.charts.map((chart) => `<div class="chart-wrap"><h3>${htmlEscape(chart.title)}</h3><canvas id="${htmlEscape(chart.id)}"></canvas><table><tr><th>관측</th>${chart.datasets.map((dataset) => `<th>${htmlEscape(dataset.label)}</th>`).join("")}</tr>${chart.labels.map((label, index) => `<tr><td>${htmlEscape(label)}</td>${chart.datasets.map((dataset) => `<td>${value(dataset.observationIds[index] ?? "")}</td>`).join("")}</tr>`).join("")}</table><small>${citation(chart.datasets.flatMap((dataset) => dataset.observationIds.flatMap((observationId) => observations.get(observationId)?.sourceIds ?? [])))}</small></div>`).join("") || "<p>비교 가능한 시계열 미확보. 차트 생략.</p>";
-  const sourceList = `<ol>${report.sources.map((source) => `<li id="source-${htmlEscape(source.id)}">${citation([source.id])}<br>${htmlEscape(source.locator)} · ${htmlEscape(source.access)} · 수집 ${htmlEscape(source.collectedAt)}<br>근거: ${htmlEscape(source.excerpt)}${source.originalUrl ? `<br>원출처: <a href="${htmlEscape(source.originalUrl)}">${htmlEscape(source.originalUrl)}</a>` : ""}</li>`).join("")}</ol>`;
+  const charts = `<div class="charts-grid">${report.charts.map((chart) => `<figure class="chart-wrap"><figcaption>${htmlEscape(chart.title.replace(/백만원/g, "억원"))}</figcaption><div class="chart-canvas"><canvas id="${htmlEscape(chart.id)}"></canvas></div><details class="chart-evidence"><summary>근거 데이터와 출처</summary><div class="table-scroll"><table><thead><tr><th>관측</th>${chart.datasets.map((dataset) => `<th class="num">${htmlEscape(dataset.label)}</th>`).join("")}</tr></thead><tbody>${chart.labels.map((label, index) => `<tr><th scope="row">${htmlEscape(label)}</th>${chart.datasets.map((dataset) => `<td class="num">${value(dataset.observationIds[index] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p>${citation(chart.datasets.flatMap((dataset) => dataset.observationIds.flatMap((observationId) => observations.get(observationId)?.sourceIds ?? [])))}</p></details></figure>`).join("") || "<p>비교 가능한 시계열 미확보. 차트 생략.</p>"}</div>`;
+  const sourceList = `<ol>${report.sources.map((source) => `<li id="source-${htmlEscape(source.id)}"><a href="${htmlEscape(source.url)}" target="_blank" rel="noopener noreferrer">${htmlEscape(source.name)}</a><span class="source-date">공개 ${htmlEscape(source.publishedAt ?? "일자 미확인")}</span><p>${htmlEscape(source.locator)}</p><details><summary>수집 기록과 근거 구절</summary><p>${htmlEscape(source.access)} · 수집 ${htmlEscape(source.collectedAt)}</p><p>${htmlEscape(source.excerpt)}</p>${source.originalUrl ? `<p>원출처: <a href="${htmlEscape(source.originalUrl)}">${htmlEscape(source.originalUrl)}</a></p>` : ""}</details></li>`).join("")}</ol>`;
   const fields: Record<string, string> = {
     TITLE: htmlEscape(`${report.company.name} (${report.company.ticker})`), COMPANY: htmlEscape(report.company.name),
     AS_OF: htmlEscape(report.asOf), SECTOR: htmlEscape(report.company.sector), STATUS: htmlEscape(gate.status),
-    WARNINGS: gate.warnings.map((warning) => `<p>${htmlEscape(warning)}</p>`).join(""),
+    WARNINGS: gate.warnings.length ? `<details class="data-status"><summary>부분 초안 · 자료 확인사항 ${gate.warnings.length}건</summary>${gate.warnings.map((warning) => `<p>${htmlEscape(warning)}</p>`).join("")}</details>` : '<p class="data-status">자동 검사 통과 · 원문 대조 범위는 확인 기록 참조</p>',
     PROFILE: claims(report.profile), SUMMARY: report.summaryIds.map((observationId) => {
       const observation = observations.get(observationId);
-      return `<div class="metric"><div class="label">${htmlEscape(observation?.label ?? "")}</div><div class="value">${value(observationId)}</div><div class="change">${observation ? `관측: ${htmlEscape(observation.observedAt)}<br>${citation(observation.sourceIds)}` : ""}</div></div>`;
-    }).join(""), FINANCIALS: financials + recentFinancials, CONSENSUS: consensusHtml, CHARTS: charts,
+      const label = observation?.label.replace(/^\d{4}\s*/, "").replace(/ —.*$/, "") ?? "";
+      return `<div class="metric${observation?.value === null ? " metric-missing" : ""}"><div class="label">${htmlEscape(label)}</div><div class="value">${observation?.value === null ? observation.status === "not-applicable" ? "미적용" : "미확보" : value(observationId)}</div><div class="change">${observation ? `${htmlEscape(observation.metric === "price" ? observation.observedAt : observation.period.end)} · ${statusLabels[observation.status]} ${citation(observation.sourceIds)}` : ""}</div>${observation?.value === null ? `<p class="metric-reason">${htmlEscape(observation.reason ?? "")}</p>` : ""}</div>`;
+    }).join(""), FINANCIALS: financials, CONSENSUS: consensusHtml, CHARTS: charts,
     INDICATORS: claims(report.indicators), DERIVATIVES: claims(report.derivatives), NARRATIVE: claims(report.narrative),
     NEWS: report.news.map((news) => `<p>${htmlEscape(news.title)}<br>${citation([news.sourceId])}</p>`).join("") || "<p>새로운 중요 자료 미확보.</p>",
     DEBATES: report.debates.map((debate) => `<h3>${htmlEscape(debate.title)}</h3><div class="bull-block"><strong>Bull</strong>${claims(debate.bull)}</div><div class="bear-block"><strong>Bear</strong>${claims(debate.bear)}</div>`).join("") || "<p>원문으로 대조 가능한 쟁점 미확보.</p>",

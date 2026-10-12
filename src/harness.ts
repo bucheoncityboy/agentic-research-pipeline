@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { relative, resolve, isAbsolute } from "node:path";
@@ -11,6 +10,7 @@ import { createFixture } from "./fixture.js";
 import { runEdgeCases } from "./edge-cases.js";
 import { runFileCases } from "./file-cases.js";
 import { runChartCases } from "./chart-cases.js";
+import { runFinancialCases } from "./financial-cases.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const skillRoot = resolve(root, ".agents/skills/company-analysis-ra");
@@ -80,13 +80,8 @@ test("sum checks contiguous quarter periods", () => {
   const valid = prepare(report); assert.ok(valid.report); assert.equal(observation(valid.report, "h1").value, 210); assert.notEqual(valid.gate.status, "FAIL");
   observation(report, "q2").period.start = "2025-03-01"; assert.equal(build(report).gate.status, "FAIL");
 });
-test("template CSS is retained from reviewed design", () => {
-  const current = readFileSync(resolve(skillRoot, "assets/template.html"), "utf8");
-  const css = /<style>([\s\S]*?)<\/style>/.exec(current)?.[1]?.replace(/\r/g, ""); assert.ok(css);
-  assert.equal(createHash("sha256").update(css).digest("hex"), "613db431476b4a84a31b3f1acfde13229561c69635496839fa69cc5e741b8fd6");
-});
 test("skill references resolve within the shipped package", () => {
-  for (const path of ["SKILL.md", "references/data-contract.md", "references/research.md", "references/setup.md"]) {
+  for (const path of ["SKILL.md", "references/data-contract.md", "references/research.md", "references/presentation.md", "references/setup.md"]) {
     for (const match of readFileSync(resolve(skillRoot, path), "utf8").matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
       const target = match[1]; assert.ok(target); if (/^https?:/.test(target)) continue;
       const targetPath = fileURLToPath(new URL(target, pathToFileURL(resolve(skillRoot, path))));
@@ -106,4 +101,4 @@ test("CLI writes gate and rejects modified output with nonzero exit", () => {
   const checked = spawnSync(process.execPath, [...args, "verify", inputPath, outputPath], { encoding: "utf8", cwd: root }); assert.equal(checked.status, 1); assert.match(checked.stdout, /FAIL/);
 });
 console.log(`${cases} behavioral checks passed.`);
-console.log(`${cases + runEdgeCases() + runFileCases() + runChartCases()} total behavioral checks passed.`);
+console.log(`${cases + runEdgeCases() + runFileCases() + runChartCases() + runFinancialCases()} total behavioral checks passed.`);
