@@ -3,9 +3,10 @@ import { Script } from "node:vm";
 import { build } from "../.agents/skills/company-analysis-ra/scripts/report.js";
 import { createFixture } from "./fixture.js";
 
-interface Config { type: string; data: { datasets: Array<{ data: Array<number | null>; spanGaps: boolean }> } }
+interface Config { type: string; data: { datasets: Array<{ data: Array<number | null>; spanGaps: boolean; borderColor: string }> }; options: { scales?: { y: { ticks: { callback: (value: number) => string }; title: { text: string } } } } }
 export function runChartCases(): number {
   const input = createFixture(); input.charts.push({ ...input.charts[0]!, id: "second-chart" });
+  input.charts[0]!.datasets.push({ ...structuredClone(input.charts[0]!.datasets[0]!), label: "두 번째 계열" });
   const result = build(input); assert.ok(result.html);
   const scripts = [...result.html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   const json = scripts.find((match) => (match[1] ?? "").includes('type="application/json"'))?.[2]; assert.ok(json);
@@ -30,5 +31,7 @@ export function runChartCases(): number {
   check("one failed chart does not prevent remaining charts", () => { const result = execute({ throwFirst: true }); assert.equal(result.calls.length, 1); assert.equal(result.fallbacks.length, 1); assert.match(result.fallbacks[0]!, /표시하지 못했습니다/); });
   check("missing canvas is guarded", () => { assert.equal(execute({ missingCanvas: true }).calls.length, 0); });
   check("missing payload exits without exception", () => { assert.equal(execute({ missingPayload: true }).calls.length, 0); });
+  check("different series have distinct colors", () => { const result = execute({}); assert.notEqual(result.calls[0]!.data.datasets[0]!.borderColor, result.calls[0]!.data.datasets[1]!.borderColor); });
+  check("market target prices retain quote units on the axis", () => { const result = execute({}); assert.equal(result.calls[0]!.options.scales!.y.title.text, "KRW"); assert.equal(result.calls[0]!.options.scales!.y.ticks.callback(44000), "44,000"); });
   return cases;
 }

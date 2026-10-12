@@ -6,99 +6,46 @@
 <title>{{TITLE}} | Company Analysis RA</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--navy:#0f1a2e;--blue:#1a3a5c;--accent:#c9a84c;--red:#c0392b;--green:#27ae60;--bg:#fafaf9;--card:#fff;--text:#1a1a1a;--muted:#6b7280;--border:#e5e7eb;--bull-bg:#e8f5e9;--bear-bg:#fbe9e7}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
-nav{width:240px;background:var(--navy);color:#fff;padding:32px 20px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
-nav .logo{font-size:1.1em;font-weight:700;margin-bottom:32px;letter-spacing:-.5px}
-nav .logo span{color:var(--accent)}
-nav a{display:block;color:#94a3b8;text-decoration:none;padding:6px 0;font-size:.85em;border-left:2px solid transparent;padding-left:12px;transition:.15s}
-nav a:hover,nav a.active{color:#fff;border-left-color:var(--accent)}
-nav .disclaimer{margin-top:auto;padding-top:24px;font-size:.7em;color:#64748b;line-height:1.5}
-main{flex:1;min-width:0;padding:40px 48px}
-.report-header{margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid var(--navy)}
-.report-header .tag{font-size:.75em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:600}
-.report-header h1{font-size:1.8em;font-weight:800;margin:4px 0 8px;letter-spacing:-1px;color:var(--navy)}
-.report-header .sub{color:var(--muted);font-size:.9em}
-.fear-gauge{transition:background .3s}
-.exec-summary{background:var(--navy);color:#fff;padding:20px 24px;border-radius:6px;margin-bottom:32px}
-.exec-summary h3{font-size:.85em;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.exec-summary .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.exec-summary .metric .label{font-size:.7em;color:#94a3b8;text-transform:uppercase}
-.exec-summary .metric .value{font-size:1.3em;font-weight:700}
-.exec-summary .metric .change{font-size:.8em}
-.up{color:#f87171}.down{color:#60a5fa}
-section{margin-bottom:36px;scroll-margin-top:20px}
-section h2{font-size:1.2em;font-weight:700;color:var(--navy);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-section h2 .num{background:var(--navy);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85em;flex-shrink:0}
-section h3{font-size:1em;font-weight:600;color:var(--blue);margin:20px 0 10px}
-section h4{font-size:.9em;font-weight:600;color:var(--navy);margin:16px 0 8px}
-table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:.88em}
-th{background:var(--navy);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:.8em;text-transform:uppercase;letter-spacing:.5px}
-td{padding:9px 12px;border-bottom:1px solid var(--border)}
-tr:nth-child(even) td{background:#f8fafc}
-.num{text-align:right;font-variant-numeric:tabular-nums}
-.badge-buy{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:3px;font-weight:600;font-size:.85em}
-.badge-ai{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:3px;font-size:.75em;font-weight:600;margin-left:8px}
-.bull-block{background:var(--bull-bg);border-left:4px solid var(--green);padding:12px 16px;margin:8px 0}
-.bear-block{background:var(--bear-bg);border-left:4px solid var(--red);padding:12px 16px;margin:8px 0}
-.bull-block strong,.bear-block strong{color:var(--navy)}
-.verdict{background:var(--navy);color:#fff;padding:20px 24px;border-radius:6px;text-align:center;margin:16px 0}
-.verdict .action{font-size:1.4em;font-weight:800;color:var(--accent)}
-.chart-wrap{background:var(--card);border:1px solid var(--border);padding:20px;border-radius:6px;margin:16px 0}
-.chart-wrap canvas{width:100%!important;max-height:420px}
-.news-card{display:flex;flex-direction:column;padding:12px 0;border-bottom:1px solid var(--border);transition:background .15s;text-decoration:none;color:inherit}
-.news-card .meta{font-size:.75em;color:var(--muted);margin-bottom:4px}
-.news-card .headline{font-size:.9em;font-weight:500;line-height:1.4}
-a.news-card:hover{background:#f8fafc}
-.risk-high{color:var(--red);font-weight:700}.risk-mid{color:#d97706;font-weight:700}
-.risk-low{color:var(--green);font-weight:700}
-.dispersion-high{color:var(--red);font-weight:700}
-.report-footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.75em;line-height:1.6}
-.oi-wall{display:flex;flex-direction:column;gap:8px}
-.oi-card{background:var(--card);border:1px solid var(--border);padding:12px;border-radius:6px}
-.oi-card .label{font-size:.75em;color:var(--muted);margin-bottom:4px}
-.oi-card .value{font-size:1.4em;font-weight:700}
-@media(max-width:768px){body{flex-direction:column}nav{width:100%;height:auto;position:static}main{padding:20px}.exec-summary .metrics{grid-template-columns:repeat(2,1fr)}}
-@media print{nav{display:none}body{display:block}main{max-width:100%}.exec-summary{background:#fff;color:var(--navy);border:1px solid var(--navy)}}
+:root{--navy:#183e63;--ink:#182a3b;--muted:#647586;--border:#dbe2e8;--wash:#f3f6f8;--teal:#1b8077;--amber:#946b30}
+*{box-sizing:border-box}html{scroll-behavior:auto}body{margin:0;overflow-wrap:anywhere;background:#edf1f4;color:var(--ink);font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:14px;line-height:1.75;display:flex;align-items:flex-start}a{color:var(--navy);text-decoration:none}a:hover{text-decoration:underline}p{margin:0 0 12px}small{font-size:11px}strong{font-weight:700}details>summary{cursor:pointer}summary:focus-visible,a:focus-visible,.table-scroll:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+nav{width:176px;flex-shrink:0;position:sticky;top:0;padding:32px 18px 24px;height:100vh;overflow:auto;font-size:11px}nav .logo{font-size:13px;font-weight:800;line-height:1.5;padding:0 8px 22px;color:var(--navy);letter-spacing:.5px}nav .logo span{display:block;color:var(--muted);font-size:10px;font-weight:500;letter-spacing:2px;margin-top:3px}nav a{display:block;padding:8px;color:var(--muted);border-bottom:1px solid #dde4e9}nav a:hover{color:var(--navy);background:#e4ebf0;text-decoration:none}nav .disclaimer{font-size:10px;line-height:1.6;color:var(--muted);padding:24px 8px}
+main{background:#fff;max-width:1160px;width:calc(100% - 176px);margin:22px auto 44px 0;padding:38px 44px 48px;box-shadow:0 3px 22px #253c5110;min-width:0}.report-header{border-top:5px solid var(--navy);padding:20px 0 22px;border-bottom:1px solid var(--border);margin-bottom:24px}.header-line{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10px;letter-spacing:1.4px}.report-header h1{font-size:34px;line-height:1.3;letter-spacing:-1.2px;margin:16px 0 12px;font-weight:800;color:var(--navy)}.report-header .sub{font-size:11px;color:var(--muted);line-height:1.7}.data-status{font-size:11px;color:var(--amber);margin-top:12px;border-left:2px solid #bf9a61;padding-left:10px}.data-status p{margin:6px 0}.data-status summary{font-weight:600}
+section{margin:0 0 34px;scroll-margin-top:20px}section h2{font-size:19px;letter-spacing:-.5px;font-weight:750;border-bottom:2px solid var(--navy);padding:0 0 9px;line-height:1.4;margin:0 0 17px;display:flex;align-items:baseline;gap:10px}section h2 .section-num{font-size:11px;letter-spacing:.5px;color:var(--muted);font-weight:600}h3{font-size:14px;line-height:1.5;margin:24px 0 12px;color:var(--navy)}ul{margin:0;padding:0;list-style:none}section li{margin:0 0 18px}section li>p{margin:4px 0 0}.claim-kind{display:inline-block;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.2px}.claim-kind.external-view{color:var(--amber)}.claim-kind.interpretation{color:var(--teal)}.claim-caveat{color:var(--muted);font-size:11px;line-height:1.7;border-left:2px solid var(--border);padding-left:10px;margin-top:7px!important}.citation{font-size:10px;font-weight:600;white-space:nowrap;color:#63809a}.claim-citations{white-space:normal}.empty-state{font-size:12px;color:var(--muted);background:var(--wash);padding:12px 16px}
+.exec-summary{margin-bottom:30px}.exec-summary h3{font-size:11px;letter-spacing:1.3px;margin:0 0 12px;color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--border);border-left:1px solid var(--border)}.metric{padding:13px 14px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);min-width:0}.metric .label{font-size:10px;color:var(--muted);line-height:1.5;min-height:30px}.metric .value{font-size:19px;font-weight:750;color:var(--navy);letter-spacing:-.5px;line-height:1.5;font-variant-numeric:tabular-nums;margin:4px 0;overflow-wrap:anywhere}.metric .change{font-size:10px;color:var(--muted)}.metric .value-status{font-size:9px;font-weight:500}.metric-missing{background:#fafbfc}.metric-missing .value{color:var(--muted);font-size:15px}.metric-reason{font-size:10px;line-height:1.5;color:var(--muted);margin:5px 0 0}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:0;font-variant-numeric:tabular-nums}th,td{padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}thead th,tr:first-child>th[scope=col]{border-top:2px solid var(--navy);border-bottom:1px solid #93a5b5;background:var(--wash);color:var(--navy);font-size:11px;font-weight:700}tbody th{font-weight:500;color:var(--ink)}.num{text-align:right;font-variant-numeric:tabular-nums}.table-scroll{overflow-x:auto;width:100%;overscroll-behavior-x:contain}.statement{margin:0 0 24px}.table-heading{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:0 0 8px}.table-heading h3{margin:0;font-size:14px}.table-heading h3 span{font-size:10px;font-weight:500;color:var(--muted);margin-left:5px}.table-unit{font-size:10px;white-space:nowrap;color:var(--muted)}.financial-table{table-layout:fixed}.financial-table th:first-child{width:40%}.financial-table th,.financial-table td{padding:6px 12px}.financial-table thead th:not(:first-child){white-space:nowrap}.financial-table .detail th{padding-left:24px;color:var(--muted);font-size:11px}.financial-table .total th,.financial-table .total td{font-weight:700;background:#f0f4f7;border-top:1px solid #b5c2cd}.financial-table .ratio th,.financial-table .ratio td{font-size:11px;color:var(--teal)}.financial-table .missing{color:#9aa7b4}.financial-table .estimate{color:var(--amber)}.value-status{font-size:9px;color:var(--amber);padding-left:3px}.table-notes{font-size:10px;line-height:1.6;color:var(--muted);padding:8px 1px 0}.table-notes p{margin:0 0 3px}.table-notes details{margin-top:4px}.table-context{color:#8493a0}.subsection-heading{margin:30px 0 18px;border-left:3px solid var(--navy);padding-left:12px}.subsection-heading h3{margin:0 0 3px}.subsection-heading p{font-size:11px;color:var(--muted);margin:0}
+.charts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.chart-wrap{margin:0;padding:16px 16px 12px;border:1px solid var(--border);min-width:0;background:#fff}.chart-wrap figcaption{font-size:12px;font-weight:700;line-height:1.6;margin-bottom:10px;color:var(--navy)}.chart-canvas{height:235px;position:relative}.chart-canvas canvas{width:100%!important;height:100%!important}.chart-evidence{font-size:10px;color:var(--muted);margin-top:12px}.chart-evidence table{font-size:10px;table-layout:auto;margin-top:8px}.chart-evidence th,.chart-evidence td{padding:5px}.chart-evidence p{margin:6px 0 0}
+.bull-block,.bear-block{padding:12px 16px;margin:10px 0;border-left:3px solid var(--teal);background:#f1f7f6}.bear-block{border-left-color:#ad7939;background:#faf6ef}.bull-block>strong,.bear-block>strong{font-size:11px;color:var(--navy);letter-spacing:1px}.bull-block ul,.bear-block ul{margin-top:6px}.bull-block li,.bear-block li{margin-bottom:8px}.report-footer{padding-top:20px;border-top:2px solid var(--navy);font-size:10px;color:var(--muted);line-height:1.7}.report-footer>strong{font-size:14px;color:var(--navy)}.report-footer ol{padding-left:22px}.report-footer li{padding:8px 0;scroll-margin-top:20px;border-bottom:1px solid var(--border)}.report-footer li>a{font-size:11px;font-weight:650}.report-footer p{margin:4px 0}.source-date{display:block}.report-footer details{margin-top:3px}.generation-note{margin-top:18px;font-size:9px;color:#91a0ac}
+@media(min-width:1500px){main{margin-left:18px}nav{width:194px}}
+@media(max-width:1000px){nav{width:148px;padding-left:12px;padding-right:12px}main{width:calc(100% - 148px);padding:30px 28px}.metric .value{font-size:16px}.financial-table th:first-child{width:42%}.charts-grid{grid-template-columns:1fr}.chart-canvas{height:260px}}
+@media(max-width:680px){body{display:block;background:#fff}nav{position:relative;width:100%;height:auto;padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px;overflow-x:auto;white-space:nowrap;align-items:center}nav .logo{font-size:11px;padding:0 12px 0 0}nav .logo span,nav .disclaimer{display:none}nav a{padding:5px 8px;flex-shrink:0;border:0;font-size:10px}main{width:100%;margin:0;padding:24px 18px;box-shadow:none}.report-header h1{font-size:28px}.header-line{font-size:8px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:12px}.metric .value{font-size:17px}section h2{font-size:17px}.financial-table{min-width:560px}.table-heading{gap:8px}.table-heading h3{font-size:13px}.table-unit{font-size:9px}.charts-grid{grid-template-columns:1fr}.chart-canvas{height:240px}table{font-size:11px}th,td{padding:7px 9px}.report-header .sub{overflow-wrap:anywhere}}
+@media print{@page{size:A4;margin:14mm 13mm}html{scroll-behavior:auto}body{display:block;background:#fff;color:#182a3b;font-size:10px;print-color-adjust:exact;-webkit-print-color-adjust:exact}nav{display:none}main{width:100%;max-width:none;margin:0;padding:0;box-shadow:none}.report-header{border-top-width:3px;padding-top:12px}.report-header h1{font-size:26px}.report-header .sub{font-size:9px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.metric{padding:8px}.metric .value{font-size:14px}.metric .label{font-size:8px;min-height:25px}.metric .change,.metric-reason{font-size:8px}section{margin-bottom:24px}section h2{font-size:15px;break-after:avoid}h3,.table-heading{break-after:avoid}table{font-size:9px}.financial-table{min-width:0}.financial-table th,.financial-table td{padding:4px 8px}.financial-table .detail th,.financial-table .ratio th,.financial-table .ratio td{font-size:8px}thead{display:table-header-group}tr{break-inside:avoid}.statement,.chart-wrap{break-inside:avoid}.table-scroll{overflow:visible}.table-notes{font-size:8px}.charts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.chart-canvas{height:190px}.chart-wrap{padding:10px}.chart-wrap figcaption{font-size:10px}.claim-caveat,.claim-kind{font-size:8px}section li{break-inside:avoid}.table-notes details>p,.chart-evidence>div,.chart-evidence>p,.report-footer details>p,.data-status>p{display:block!important}details>summary{font-size:8px}.report-footer{font-size:8px}.report-footer li{break-inside:avoid}.report-footer li>a{font-size:9px}a{color:inherit}.citation{font-size:8px}}
 </style>
 </head>
 <body>
-<nav>
-<div class="logo">Company <span>Analysis</span></div>
-<a href="#sa">A. Company Overview</a>
-<a href="#s0">0. Executive Summary</a>
-<a href="#s1">1. Financials &amp; Consensus</a>
-<a href="#s1c">1.5 Evidence Charts</a>
-<a href="#s1l">1.8 Leading Indicators</a>
-<a href="#s1d">1.9 Derivatives &amp; Flows</a>
-<a href="#s2">2. Mainstream Views</a>
-<a href="#s2n">2.5 News Monitor</a>
-<a href="#s3">3. Core Debates</a>
-<a href="#s4">4. Risks &amp; Calendar</a>
-<a href="#s5">5. Research Conclusion</a>
-<div class="disclaimer">Company Analysis RA v3.1<br>AI 생성 리서치 초안</div>
+<nav aria-label="보고서 목차">
+<div class="logo">COMPANY NOTE<span>RESEARCH RA</span></div>
+<a href="#s0">핵심 지표</a><a href="#sa">01 기업과 사업</a><a href="#s1">02 재무제표</a><a href="#s1c">03 실적 차트</a><a href="#s2">04 실적과 해석</a><a href="#s3">05 핵심 쟁점</a><a href="#s1l">06 산업 선행자료</a><a href="#s1d">07 수급과 파생</a><a href="#s2n">08 공시와 뉴스</a><a href="#s4">09 주요 일정</a><a href="#s5">10 리서치 결론</a><a href="#sources">자료와 근거</a>
+<div class="disclaimer">Company Analysis RA<br>공개자료 기반 리서치 초안</div>
 </nav>
 <main>
-<div class="report-header">
-<div class="tag">Company Analysis RA · AI 생성</div>
+<header class="report-header">
+<div class="header-line"><span>EQUITY RESEARCH / COMPANY NOTE</span><span>공개자료 기반 기업분석</span></div>
 <h1>{{TITLE}}</h1>
-<div class="sub">정보 기준시각: {{AS_OF}} · 섹터: {{SECTOR}} · 자동 검사: {{STATUS}}</div>
-<p>자동 검사는 구조·계산·참조를 확인합니다. 원문 내용 대조와 브라우저 확인은 별도로 수행합니다.</p>
+<div class="sub">{{SECTOR}} · 정보 기준시각 {{AS_OF}}<br>자동 데이터 검사 {{STATUS}} · 원문 대조 범위와 미확보 자료는 본문 및 확인 기록 참조</div>
 {{WARNINGS}}
-</div>
-<section id="sa"><h2><span class="num">A</span>기업 개요와 사업 구조</h2>{{PROFILE}}</section>
-<section id="s0"><div class="exec-summary"><h3>Executive Summary</h3><div class="metrics">{{SUMMARY}}</div></div></section>
-<section id="s1"><h2><span class="num">1</span>재무제표와 컨센서스</h2><h3>최근 완료된 회계연도 비교</h3>{{FINANCIALS}}<h3>하우스별 목표가와 집계 기준</h3>{{CONSENSUS}}</section>
-<section id="s1c"><h2><span class="num">1.5</span>근거 데이터 차트</h2>{{CHARTS}}</section>
-<section id="s1l"><h2><span class="num">1.8</span>산업 선행자료</h2>{{INDICATORS}}</section>
-<section id="s1d"><h2><span class="num">1.9</span>파생상품과 수급</h2>{{DERIVATIVES}}</section>
-<section id="s2"><h2><span class="num">2</span>공통 쟁점과 시장 해석</h2>{{NARRATIVE}}</section>
-<section id="s2n"><h2><span class="num">2.5</span>주요 공시와 뉴스</h2>{{NEWS}}</section>
-<section id="s3"><h2><span class="num">3</span>Bull / Bear 핵심 쟁점</h2>{{DEBATES}}</section>
-<section id="s4"><h2><span class="num">4</span>주요 일정과 확인 상태</h2>{{CALENDAR}}</section>
-<section id="s5"><h2><span class="num">5</span>리서치 결론과 추가 확인 사항</h2>{{CONCLUSION}}</section>
-<div class="report-footer"><strong>자료와 근거 위치</strong>{{SOURCES}}Generated by Company Analysis RA v3.1 · {{AS_OF}}</div>
+</header>
+<section id="s0" aria-label="핵심 지표"><div class="exec-summary"><h3>KEY FINANCIALS</h3><div class="metrics">{{SUMMARY}}</div></div></section>
+<section id="sa"><h2><span class="section-num">01</span>기업 개요와 사업 구조</h2>{{PROFILE}}</section>
+<section id="s1"><h2><span class="section-num">02</span>재무제표와 컨센서스</h2>{{FINANCIALS}}<div class="subsection-heading"><h3>하우스별 목표가와 집계 기준</h3></div>{{CONSENSUS}}</section>
+<section id="s1c"><h2><span class="section-num">03</span>실적과 현금흐름 차트</h2>{{CHARTS}}</section>
+<section id="s2"><h2><span class="section-num">04</span>실적 변화와 시장 해석</h2>{{NARRATIVE}}</section>
+<section id="s3"><h2><span class="section-num">05</span>핵심 쟁점 · Bull / Bear</h2>{{DEBATES}}</section>
+<section id="s1l"><h2><span class="section-num">06</span>산업 선행자료</h2>{{INDICATORS}}</section>
+<section id="s1d"><h2><span class="section-num">07</span>파생상품과 수급</h2>{{DERIVATIVES}}</section>
+<section id="s2n"><h2><span class="section-num">08</span>주요 공시와 뉴스</h2>{{NEWS}}</section>
+<section id="s4"><h2><span class="section-num">09</span>주요 일정과 확인 상태</h2>{{CALENDAR}}</section>
+<section id="s5"><h2><span class="section-num">10</span>리서치 결론과 추가 확인 사항</h2>{{CONCLUSION}}</section>
+<footer class="report-footer" id="sources"><strong>자료와 근거 위치</strong>{{SOURCES}}<p class="generation-note">Generated by Company Analysis RA · {{AS_OF}}</p></footer>
 </main>
 <script id="chart-data" type="application/json">{{CHART_DATA_JSON}}</script>
 <script>
@@ -106,30 +53,26 @@ a.news-card:hover{background:#f8fafc}
   var payload = document.getElementById('chart-data');
   if (!payload) return;
   var charts = JSON.parse(payload.textContent || '[]');
-  function fallback(canvas, message) {
-    var notice = document.createElement('p');
-    notice.textContent = message;
-    canvas.replaceWith(notice);
-  }
+  function fallback(canvas, message) { var notice = document.createElement('p'); notice.textContent = message; canvas.replaceWith(notice); }
   charts.forEach(function (chart) {
     var canvas = document.getElementById(chart.id);
     if (!canvas) return;
-    if (typeof Chart === 'undefined') {
-      fallback(canvas, '차트 라이브러리 미로드. 아래 근거 데이터 표를 확인하십시오.');
-      return;
-    }
+    if (typeof Chart === 'undefined') { fallback(canvas, '차트 라이브러리 미로드. 아래 근거 데이터 표를 확인하십시오.'); return; }
     try {
-      new Chart(canvas, {
-        type: chart.type,
-        data: chart.data,
-        options: {
-          responsive: true,
-          plugins: { title: { display: true, text: chart.title }, legend: { position: 'bottom' } }
+      var display = chart.display || { unit: '', divisor: 1 };
+      var options = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          title: { display: false }, legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, padding: 12, font: { size: 10 } } },
+          tooltip: { callbacks: { label: function (context) { var raw = chart.type === 'doughnut' ? context.parsed : context.parsed.y; return context.dataset.label + ': ' + (raw / display.divisor).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + ' ' + display.unit; } } }
         }
-      });
-    } catch (_) {
-      fallback(canvas, '차트를 표시하지 못했습니다. 아래 근거 데이터 표를 확인하십시오.');
-    }
+      };
+      if (chart.type !== 'doughnut') options.scales = {
+        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 0 } },
+        y: { title: { display: true, text: display.unit, font: { size: 9 } }, grid: { color: '#e8edf1' }, ticks: { font: { size: 9 }, callback: function (tick) { return (tick / display.divisor).toLocaleString('ko-KR', { maximumFractionDigits: 1 }); } } }
+      };
+      new Chart(canvas, { type: chart.type, data: chart.data, options: options });
+    } catch (_) { fallback(canvas, '차트를 표시하지 못했습니다. 아래 근거 데이터 표를 확인하십시오.'); }
   });
 })();
 </script>
