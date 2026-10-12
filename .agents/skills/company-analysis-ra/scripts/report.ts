@@ -1,13 +1,18 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { Script } from "node:vm";
 import { parse, type DefaultTreeAdapterMap } from "parse5";
 import { reportSchema, type ResearchReport, type Observation, type Claim, type Gate } from "./schema.js";
 import { pathsAlias, runCli } from "./files.js";
 import { financialDisplay, renderFinancials } from "./financials.js";
+import { assessResearch, coverageRows } from "./quality.js";
 
 const templatePath = fileURLToPath(new URL("../assets/template.html", import.meta.url));
+const chartEntry = pathToFileURL(createRequire(import.meta.url).resolve("chart.js"));
+const chartLicense = readFileSync(fileURLToPath(new URL("../LICENSE.md", chartEntry)), "utf8");
+const chartLibrary = `/* ${chartLicense.replace(/\*\//g, "* /")} */\n${readFileSync(fileURLToPath(new URL("chart.umd.min.js", chartEntry)), "utf8")}`.replace(/\/\/# sourceMappingURL=.*$/gm, "").replace(/<\/script/gi, "<\\/script");
 const hash = (value: string): string => createHash("sha256").update(value).digest("hex");
 const unique = (values: string[]): string[] => [...new Set(values)];
 const htmlEscape = (value: string): string => value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
@@ -94,13 +99,14 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
   function calculate(observation: Observation): void {
     if (!observation.formula || resolved.has(observation.id)) return;
     const { operation, inputs } = observation.formula;
-    if (["difference", "upside", "ratio-percent"].includes(operation) && inputs.length !== 2) gate.errors.push(`Binary formula requires two inputs: ${observation.id}`);
+    if (["difference", "upside", "ratio-percent", "growth-percent"].includes(operation) && inputs.length !== 2) gate.errors.push(`Binary formula requires two inputs: ${observation.id}`);
     if (unique(inputs).length !== inputs.length) gate.errors.push(`Duplicate formula input: ${observation.id}`);
     const rows = inputs.flatMap((observationId) => { const row = get(observationId, observation.id); return row ? [row] : []; });
     if (rows.some((row) => row.basis !== observation.basis || row.scope !== observation.scope)) gate.errors.push(`Formula basis/scope mismatch: ${observation.id}`);
     if (rows.some((row) => row.unit !== rows[0]?.unit)) gate.errors.push(`Formula input unit mismatch: ${observation.id}`);
-    if (operation !== "upside" && operation !== "ratio-percent" && rows.some((row) => row.unit !== observation.unit)) gate.errors.push(`Formula output unit mismatch: ${observation.id}`);
-    if ((operation === "upside" || operation === "ratio-percent") && observation.unit !== "%") gate.errors.push(`Ratio output must use %: ${observation.id}`);
+    if (operation !== "upside" && operation !== "ratio-percent" && operation !== "growth-percent" && rows.some((row) => row.unit !== observation.unit)) gate.errors.push(`Formula output unit mismatch: ${observation.id}`);
+    if (["upside", "ratio-percent", "growth-percent"].includes(operation) && observation.unit !== "%") gate.errors.push(`Ratio output must use %: ${observation.id}`);
+    if (operation === "growth-percent" && (rows[0]?.metric !== rows[1]?.metric || rows[0]?.period.kind !== rows[1]?.period.kind || rows[0]?.period.kind === "instant" || !rows[0] || !samePeriod(rows[0], observation) || (rows[1] && rows[0].period.end <= rows[1].period.end))) gate.errors.push(`Growth requires same flow metric/kind, older comparison period, and current output period: ${observation.id}`);
     if (operation === "ratio-percent" && rows.some((row) => !samePeriod(row, observation))) gate.errors.push(`Ratio period mismatch: ${observation.id}`);
     if (operation === "upside" && (rows[0]?.metric !== "targetPrice" || rows[1]?.metric !== "price" || rows[0]?.basis !== "market" || rows[1]?.basis !== "market" || observation.metric !== "upside")) gate.errors.push(`Upside requires target price and market price: ${observation.id}`);
     if (operation === "upside" && rows[1] && !samePeriod(rows[1], observation)) gate.errors.push(`Upside output must use market price period: ${observation.id}`);
@@ -123,16 +129,18 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
     }
     const numericRows = rows.filter((row) => row.value !== null);
     let computed: number | null = null;
+    let growthUnavailable = false;
     if (rows.length === inputs.length && (operation === "mean" ? numericRows.length > 0 : numericRows.length === rows.length)) {
       const values = numericRows.map((row) => row.value as number);
       if (operation === "mean") computed = values.reduce((sum, value) => sum + value, 0) / values.length;
       if (operation === "sum") computed = values.reduce((sum, value) => sum + value, 0);
-      if (["difference", "upside", "ratio-percent"].includes(operation)) {
+      if (["difference", "upside", "ratio-percent", "growth-percent"].includes(operation)) {
         if (values.length !== 2) gate.errors.push(`Binary formula requires two inputs: ${observation.id}`);
         else if (values[0] !== undefined && values[1] !== undefined) {
           if (operation === "difference") computed = values[0] - values[1];
+          else if (operation === "growth-percent" && values[1] <= 0) growthUnavailable = true;
           else if (values[1] === 0) gate.errors.push(`Zero denominator: ${observation.id}`);
-          else computed = (operation === "upside" ? values[0] / values[1] - 1 : values[0] / values[1]) * 100;
+          else computed = (["upside", "growth-percent"].includes(operation) ? values[0] / values[1] - 1 : values[0] / values[1]) * 100;
         }
       }
     }
@@ -141,7 +149,7 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
     if (observation.value !== null) gate.errors.push(`Derived value must be null before calculation: ${observation.id}`);
     observation.value = computed;
     observation.sourceIds = unique(rows.flatMap((row) => row.sourceIds));
-    if (computed === null) { observation.status = "missing"; observation.reason = "계산 입력 미확보"; }
+    if (computed === null) { observation.status = growthUnavailable ? "not-applicable" : "missing"; observation.reason = growthUnavailable ? "비교 기준값이 0 또는 음수여서 증감률을 산출하지 않음. 절대 변화·흑자/적자 전환으로 해석" : "계산 입력 미확보"; }
     if (computed !== null) observation.status = numericRows.some((row) => row.status === "estimate") ? "estimate" : numericRows.some((row) => row.status === "preliminary") ? "preliminary" : "actual";
     if (computed !== null && observation.status !== "estimate" && observation.period.end > report.asOf.slice(0, 10)) gate.errors.push(`Computed actual period beyond cutoff: ${observation.id}`);
     if (observation.metric === "capex" && computed !== null && computed < 0) gate.errors.push(`CAPEX must be positive outflow: ${observation.id}`);
@@ -207,7 +215,7 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
     if (consensus && (consensus.metric !== "targetPrice" || consensus.unit !== report.company.currency || consensus.basis !== "market" || consensus.period.kind !== "instant" || consensus.scope !== price?.scope || consensus.status === "not-applicable" || (consensus.value !== null && consensus.value <= 0))) gate.errors.push("Consensus definition must be a positive target-price market snapshot");
     if (consensus?.formula && (consensus.formula.operation !== "mean" || JSON.stringify([...consensus.formula.inputs].sort()) !== JSON.stringify(report.brokers.map((row) => row.targetId).sort()))) gate.errors.push("Consensus must use exactly the displayed broker targets");
   }
-  const claims = [...report.profile, ...report.narrative, ...report.indicators, ...report.derivatives, ...report.conclusion, ...report.debates.flatMap((debate) => [...debate.bull, ...debate.bear])];
+  const claims = [...report.profile, ...report.narrative, ...report.indicators, ...report.derivatives, ...report.conclusion, ...(report.executive ?? []), ...(report.valuation ?? []), ...report.debates.flatMap((debate) => [...debate.bull, ...debate.bear])];
   for (const claim of claims) {
     checkSources(claim.sourceIds, claim.kind);
     const fullText = `${claim.text} ${claim.caveat ?? ""}`;
@@ -241,7 +249,10 @@ export function prepare(input: unknown): { report: ResearchReport | null; gate: 
   for (const event of report.calendar) checkSources(event.sourceIds, event.title);
   if (report.fixture) gate.warnings.push("가상 fixture: 실제 기업분석에 사용 금지");
   if (gate.missingRequiredIds.length) gate.warnings.push(`필수 데이터 미확보: ${gate.missingRequiredIds.join(", ")}`);
+  const assessment = assessResearch(report);
+  gate.errors.push(...assessment.errors); gate.warnings.push(...assessment.gaps.map((gap) => `조사·검수: ${gap}`));
   gate.status = gate.errors.length ? "FAIL" : gate.warnings.length ? "PARTIAL" : "PASS";
+  gate.research = { state: !report.research ? "UNASSESSED" : report.research.intent === "final" && gate.status === "PASS" ? "FINAL" : "DRAFT", profile: report.research?.profile ?? "legacy", blockingItems: [...gate.errors, ...gate.warnings], missingReviewIds: assessment.missingReviewIds };
   return { report, gate };
 }
 
@@ -258,7 +269,7 @@ export function render(report: ResearchReport, gate: Gate, template = readFileSy
     const display = observation.basis !== "market" ? financialDisplay(observation.unit) : { unit: observation.unit, divisor: 1 };
     const displayed = observation.value === null ? null : observation.value / display.divisor;
     const rounded = displayed === null ? "" : new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format(displayed);
-    const shown = display.divisor === 1 || displayed === null ? format(observation) : `${displayed !== 0 && /^-?0$/.test(rounded) ? displayed.toExponential(2) : rounded} ${display.unit}`;
+    const shown = observation.formula && observation.unit === "%" && displayed !== null && (displayed === 0 || !/^-?0$/.test(rounded)) ? `${rounded} %` : display.divisor === 1 || displayed === null ? format(observation) : `${displayed !== 0 && /^-?0$/.test(rounded) ? displayed.toExponential(2) : rounded} ${display.unit}`;
     return `<span data-observation-id="${htmlEscape(observationId)}" title="${htmlEscape(format(observation))}">${htmlEscape(shown)}</span>${["estimate", "preliminary", "not-applicable"].includes(observation.status) ? `<small class="value-status"> [${statusLabels[observation.status]}]</small>` : ""}`;
   };
   const claims = (items: Claim[]): string => items.length ? `<ul>${items.map((claim) => {
@@ -283,6 +294,12 @@ export function render(report: ResearchReport, gate: Gate, template = readFileSy
   const fields: Record<string, string> = {
     TITLE: htmlEscape(`${report.company.name} (${report.company.ticker})`), COMPANY: htmlEscape(report.company.name),
     AS_OF: htmlEscape(report.asOf), SECTOR: htmlEscape(report.company.sector), STATUS: htmlEscape(gate.status),
+    DELIVERY_STATUS: gate.research?.state === "FINAL" ? "최종 보고서" : report.fixture ? "가상 실행 예시" : "조사 초안",
+    EXECUTIVE: report.executive?.length ? `<div class="executive-thesis"><h3>핵심 판단과 확인 조건</h3>${claims(report.executive)}</div>` : "",
+    VALUATION: report.valuation?.length ? claims(report.valuation) : "",
+    COVERAGE: report.research ? `<details class="coverage"><summary>조사 범위·검수 기록</summary><p>${htmlEscape(report.research.scopeReason)}</p><div class="table-scroll"><table><thead><tr><th>항목</th><th>범위</th><th>상태</th><th>근거·한계</th></tr></thead><tbody>${coverageRows(report).map((row) => `<tr><th>${htmlEscape(row.label)}</th><td>${row.required ? "필수" : "보충"}</td><td>${htmlEscape(({ done: "조사 완료", unavailable: "미확보", "not-applicable": "미적용", "not-recorded": "미기록" })[row.status as "done" | "unavailable" | "not-applicable" | "not-recorded"])}</td><td>${htmlEscape(row.reason)}</td></tr>`).join("")}</tbody></table></div>${report.research.checks.map((check) => `<p><strong>${htmlEscape(({ sources: "원문 대조", desktop: "데스크톱", mobile: "모바일", print: "인쇄" })[check.kind])} · ${check.status === "done" ? "검수 완료" : check.status === "not-applicable" ? "미적용" : "미검수"}</strong> · ${htmlEscape(check.record)}</p>`).join("")}<small>원문·화면 검수는 수행 기록에 기반한 판정입니다. 자동 검사가 외부 원문의 진위를 증명하지 않습니다.</small></details>` : "",
+    CHART_LIBRARY_JS: chartLibrary,
+    NAV_LINKS: [["s0", "핵심 지표", true], ["sa", "기업과 사업", true], ["s1", "재무제표", true], ["s1c", "실적 차트", !!report.charts.length], ["s2", "실적과 해석", true], ["s3", "핵심 쟁점", !!report.debates.length], ["sv", "밸류에이션", !!report.valuation?.length], ["s1l", "산업·선행자료", !!report.indicators.length], ["s1d", "수급과 파생", !!report.derivatives.length], ["s2n", "공시와 뉴스", !!report.news.length], ["s4", "주요 일정", !!report.calendar.length], ["s5", "리서치 결론", true], ["sources", "자료와 근거", true]].filter((row) => row[2]).map((row) => `<a href="#${row[0]}">${row[1]}</a>`).join(""),
     WARNINGS: gate.warnings.length ? `<details class="data-status"><summary>부분 초안 · 자료 확인사항 ${gate.warnings.length}건</summary>${gate.warnings.map((warning) => `<p>${htmlEscape(warning)}</p>`).join("")}</details>` : '<p class="data-status">자동 검사 통과 · 원문 대조 범위는 확인 기록 참조</p>',
     PROFILE: claims(report.profile), SUMMARY: report.summaryIds.map((observationId) => {
       const observation = observations.get(observationId);
@@ -296,6 +313,13 @@ export function render(report: ResearchReport, gate: Gate, template = readFileSy
     CONCLUSION: claims(report.conclusion), SOURCES: sourceList,
     CHART_DATA_JSON: JSON.stringify(chartData).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029"),
   };
+  const section = (id: string, title: string, number: string, content: string, show: boolean): string => show ? `<section id="${id}"><h2><span class="section-num">${number}</span>${title}</h2>${content}</section>` : "";
+  fields.CHART_SECTION = section("s1c", "실적과 현금흐름 차트", "03", charts, !!report.charts.length);
+  fields.VALUATION_SECTION = section("sv", "밸류에이션과 비교 기준", "06", fields.VALUATION ?? "", !!report.valuation?.length);
+  fields.INDUSTRY_SECTION = section("s1l", "산업과 선행자료", "07", fields.INDICATORS ?? "", !!report.indicators.length);
+  fields.FLOW_SECTION = section("s1d", "파생상품과 수급", "08", fields.DERIVATIVES ?? "", !!report.derivatives.length);
+  fields.NEWS_SECTION = section("s2n", "주요 공시와 뉴스", "09", fields.NEWS ?? "", !!report.news.length);
+  fields.CALENDAR_SECTION = section("s4", "주요 일정과 확인 상태", "10", fields.CALENDAR ?? "", !!report.calendar.length);
   const output = template.replace(/\{\{([A-Z_]+)\}\}/g, (_, key: string) => {
     const content = fields[key]; if (content === undefined) throw new Error(`Unsupported template token: ${key}`); return content;
   });
@@ -334,10 +358,11 @@ export function build(input: unknown): { html: string | null; gate: Gate } {
     const html = render(report, gate);
     gate.errors.push(...inspectHtml(html));
     gate.outputSha256 = hash(html);
-    if (gate.errors.length) { gate.status = "FAIL"; return { html: null, gate }; }
+    if (gate.errors.length) { gate.status = "FAIL"; if (gate.research) { gate.research.state = "DRAFT"; gate.research.blockingItems = [...gate.errors, ...gate.warnings]; } return { html: null, gate }; }
     return { html, gate };
   } catch (error: unknown) {
     gate.errors.push(error instanceof Error ? error.message : String(error)); gate.status = "FAIL";
+    if (gate.research) { gate.research.state = "DRAFT"; gate.research.blockingItems = [...gate.errors, ...gate.warnings]; }
     return { html: null, gate };
   }
 }
@@ -346,7 +371,7 @@ export function verify(input: unknown, html: string): Gate {
   const result = build(input);
   result.gate.errors.push(...inspectHtml(html));
   if (result.html !== html) result.gate.errors.push("Rendered output differs from canonical input/template; rebuild required");
-  if (result.gate.errors.length) result.gate.status = "FAIL";
+  if (result.gate.errors.length) { result.gate.status = "FAIL"; if (result.gate.research) { result.gate.research.state = "DRAFT"; result.gate.research.blockingItems = [...result.gate.errors, ...result.gate.warnings]; } }
   result.gate.outputSha256 = hash(html);
   return result.gate;
 }

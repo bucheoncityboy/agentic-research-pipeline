@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "3.1",
+  "schemaVersion": "3.2",
   "asOf": "2026-10-09T09:00:00+09:00",
   "fixture": true,
   "company": {
@@ -29,6 +29,16 @@
       "collectedAt": "2026-10-09T09:00:00+09:00",
       "locator": "가상 시세·목표가 표",
       "excerpt": "가상 목표가는 KB 44000, NH 61000, 유안타 60000이며 SK는 미확보입니다.",
+      "access": "direct"
+    },
+    {
+      "id": "interim-source",
+      "name": "가상 분기 공시",
+      "url": "https://example.com/interim",
+      "publishedAt": "2026-07-30",
+      "collectedAt": "2026-10-09T09:00:00+09:00",
+      "locator": "가상 분기 표",
+      "excerpt": "실제 공시가 아닌 실행용 예제",
       "access": "direct"
     }
   ],
@@ -770,6 +780,996 @@
           "capex.2025"
         ]
       }
+    },
+    {
+      "id": "costOfSales.2023",
+      "label": "가상 costOfSales",
+      "metric": "costOfSales",
+      "scope": "fixture-company",
+      "value": 60,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "grossProfit.2023",
+      "label": "가상 grossProfit",
+      "metric": "grossProfit",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "sga.2023",
+      "label": "가상 sga",
+      "metric": "sga",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "profitBeforeTax.2023",
+      "label": "가상 profitBeforeTax",
+      "metric": "profitBeforeTax",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "incomeTax.2023",
+      "label": "가상 incomeTax",
+      "metric": "incomeTax",
+      "scope": "fixture-company",
+      "value": 5,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "currentAssets.2023",
+      "label": "가상 currentAssets",
+      "metric": "currentAssets",
+      "scope": "fixture-company",
+      "value": 80,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "nonCurrentAssets.2023",
+      "label": "가상 nonCurrentAssets",
+      "metric": "nonCurrentAssets",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "currentLiabilities.2023",
+      "label": "가상 currentLiabilities",
+      "metric": "currentLiabilities",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "nonCurrentLiabilities.2023",
+      "label": "가상 nonCurrentLiabilities",
+      "metric": "nonCurrentLiabilities",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "receivables.2023",
+      "label": "가상 receivables",
+      "metric": "receivables",
+      "scope": "fixture-company",
+      "value": 30,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "inventory.2023",
+      "label": "가상 inventory",
+      "metric": "inventory",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cfi.2023",
+      "label": "가상 cfi",
+      "metric": "cfi",
+      "scope": "fixture-company",
+      "value": -25,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cff.2023",
+      "label": "가상 cff",
+      "metric": "cff",
+      "scope": "fixture-company",
+      "value": -5,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "margin.2023",
+      "label": "가상 영업이익률",
+      "metric": "operatingMargin",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "%",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "ratio-percent",
+        "inputs": [
+          "operatingProfit.2023",
+          "revenue.2023"
+        ]
+      }
+    },
+    {
+      "id": "netDebt.2023",
+      "label": "가상 순차입금",
+      "metric": "netDebt",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2023-12-31",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "difference",
+        "inputs": [
+          "debt.2023",
+          "cash.2023"
+        ]
+      }
+    },
+    {
+      "id": "fcf.2023",
+      "label": "가상 FCF",
+      "metric": "fcf",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2023-01-01",
+        "end": "2023-12-31"
+      },
+      "observedAt": "2023-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "difference",
+        "inputs": [
+          "cfo.2023",
+          "capex.2023"
+        ]
+      }
+    },
+    {
+      "id": "costOfSales.2024",
+      "label": "가상 costOfSales",
+      "metric": "costOfSales",
+      "scope": "fixture-company",
+      "value": 66,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "grossProfit.2024",
+      "label": "가상 grossProfit",
+      "metric": "grossProfit",
+      "scope": "fixture-company",
+      "value": 44,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "sga.2024",
+      "label": "가상 sga",
+      "metric": "sga",
+      "scope": "fixture-company",
+      "value": 24,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "profitBeforeTax.2024",
+      "label": "가상 profitBeforeTax",
+      "metric": "profitBeforeTax",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "incomeTax.2024",
+      "label": "가상 incomeTax",
+      "metric": "incomeTax",
+      "scope": "fixture-company",
+      "value": 5,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "currentAssets.2024",
+      "label": "가상 currentAssets",
+      "metric": "currentAssets",
+      "scope": "fixture-company",
+      "value": 80,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "nonCurrentAssets.2024",
+      "label": "가상 nonCurrentAssets",
+      "metric": "nonCurrentAssets",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "currentLiabilities.2024",
+      "label": "가상 currentLiabilities",
+      "metric": "currentLiabilities",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "nonCurrentLiabilities.2024",
+      "label": "가상 nonCurrentLiabilities",
+      "metric": "nonCurrentLiabilities",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "receivables.2024",
+      "label": "가상 receivables",
+      "metric": "receivables",
+      "scope": "fixture-company",
+      "value": 30,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "inventory.2024",
+      "label": "가상 inventory",
+      "metric": "inventory",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cfi.2024",
+      "label": "가상 cfi",
+      "metric": "cfi",
+      "scope": "fixture-company",
+      "value": -25,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cff.2024",
+      "label": "가상 cff",
+      "metric": "cff",
+      "scope": "fixture-company",
+      "value": -5,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "margin.2024",
+      "label": "가상 영업이익률",
+      "metric": "operatingMargin",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "%",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "ratio-percent",
+        "inputs": [
+          "operatingProfit.2024",
+          "revenue.2024"
+        ]
+      }
+    },
+    {
+      "id": "netDebt.2024",
+      "label": "가상 순차입금",
+      "metric": "netDebt",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2024-12-31",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "difference",
+        "inputs": [
+          "debt.2024",
+          "cash.2024"
+        ]
+      }
+    },
+    {
+      "id": "fcf.2024",
+      "label": "가상 FCF",
+      "metric": "fcf",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2024-01-01",
+        "end": "2024-12-31"
+      },
+      "observedAt": "2024-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "difference",
+        "inputs": [
+          "cfo.2024",
+          "capex.2024"
+        ]
+      }
+    },
+    {
+      "id": "costOfSales.2025",
+      "label": "가상 costOfSales",
+      "metric": "costOfSales",
+      "scope": "fixture-company",
+      "value": 72,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "grossProfit.2025",
+      "label": "가상 grossProfit",
+      "metric": "grossProfit",
+      "scope": "fixture-company",
+      "value": 48,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "sga.2025",
+      "label": "가상 sga",
+      "metric": "sga",
+      "scope": "fixture-company",
+      "value": 28,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "profitBeforeTax.2025",
+      "label": "가상 profitBeforeTax",
+      "metric": "profitBeforeTax",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "incomeTax.2025",
+      "label": "가상 incomeTax",
+      "metric": "incomeTax",
+      "scope": "fixture-company",
+      "value": 5,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "currentAssets.2025",
+      "label": "가상 currentAssets",
+      "metric": "currentAssets",
+      "scope": "fixture-company",
+      "value": 80,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "nonCurrentAssets.2025",
+      "label": "가상 nonCurrentAssets",
+      "metric": "nonCurrentAssets",
+      "scope": "fixture-company",
+      "value": 120,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "currentLiabilities.2025",
+      "label": "가상 currentLiabilities",
+      "metric": "currentLiabilities",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "nonCurrentLiabilities.2025",
+      "label": "가상 nonCurrentLiabilities",
+      "metric": "nonCurrentLiabilities",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "receivables.2025",
+      "label": "가상 receivables",
+      "metric": "receivables",
+      "scope": "fixture-company",
+      "value": 30,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "inventory.2025",
+      "label": "가상 inventory",
+      "metric": "inventory",
+      "scope": "fixture-company",
+      "value": 20,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cfi.2025",
+      "label": "가상 cfi",
+      "metric": "cfi",
+      "scope": "fixture-company",
+      "value": -25,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "cff.2025",
+      "label": "가상 cff",
+      "metric": "cff",
+      "scope": "fixture-company",
+      "value": -5,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "financial-source"
+      ]
+    },
+    {
+      "id": "margin.2025",
+      "label": "가상 영업이익률",
+      "metric": "operatingMargin",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "%",
+      "basis": "consolidated",
+      "period": {
+        "kind": "FY",
+        "start": "2025-01-01",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "ratio-percent",
+        "inputs": [
+          "operatingProfit.2025",
+          "revenue.2025"
+        ]
+      }
+    },
+    {
+      "id": "netDebt.2025",
+      "label": "가상 순차입금",
+      "metric": "netDebt",
+      "scope": "fixture-company",
+      "value": null,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "instant",
+        "start": "2025-12-31",
+        "end": "2025-12-31"
+      },
+      "observedAt": "2025-12-31T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [],
+      "formula": {
+        "operation": "difference",
+        "inputs": [
+          "debt.2025",
+          "cash.2025"
+        ]
+      }
+    },
+    {
+      "id": "operatingProfit.q2",
+      "label": "가상 분기 영업이익",
+      "metric": "operatingProfit",
+      "scope": "fixture-company",
+      "value": 8,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "quarter",
+        "start": "2026-04-01",
+        "end": "2026-06-30"
+      },
+      "observedAt": "2026-06-30T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "interim-source"
+      ]
+    },
+    {
+      "id": "revenue.q2",
+      "label": "가상 분기 매출",
+      "metric": "revenue",
+      "scope": "fixture-company",
+      "value": 40,
+      "unit": "KRW",
+      "basis": "consolidated",
+      "period": {
+        "kind": "quarter",
+        "start": "2026-04-01",
+        "end": "2026-06-30"
+      },
+      "observedAt": "2026-06-30T23:59:59+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "interim-source"
+      ]
+    },
+    {
+      "id": "per",
+      "label": "가상 제공사 PER",
+      "metric": "per",
+      "value": 18.5,
+      "scope": "fixture-company",
+      "unit": "배",
+      "basis": "market",
+      "period": {
+        "kind": "instant",
+        "start": "2026-10-08",
+        "end": "2026-10-08"
+      },
+      "observedAt": "2026-10-08T15:30:00+09:00",
+      "status": "actual",
+      "sourceIds": [
+        "market-source"
+      ]
     }
   ],
   "priceId": "price",
@@ -895,7 +1895,16 @@
       "literalTerms": []
     }
   ],
-  "indicators": [],
+  "indicators": [
+    {
+      "kind": "fact",
+      "text": "산업과 경쟁 근거를 연결하는 가상 사례입니다.",
+      "sourceIds": [
+        "financial-source"
+      ],
+      "literalTerms": []
+    }
+  ],
   "derivatives": [],
   "debates": [
     {
@@ -909,11 +1918,33 @@
           "literalTerms": []
         }
       ],
-      "bear": []
+      "bear": [
+        {
+          "kind": "interpretation",
+          "text": "가상 사례의 FCF {{obs:fcf.2025}}는 투자 지출 시점에 민감합니다.",
+          "sourceIds": [],
+          "caveat": "실제 전망이 아닌 입력 구조 검사이며 투자 지출이 달라지면 해석도 바뀝니다.",
+          "literalTerms": []
+        }
+      ]
     }
   ],
-  "news": [],
-  "calendar": [],
+  "news": [
+    {
+      "title": "가상 분기 공시",
+      "sourceId": "interim-source"
+    }
+  ],
+  "calendar": [
+    {
+      "date": "2026-10-30",
+      "title": "가상 발표 일정",
+      "status": "confirmed",
+      "sourceIds": [
+        "interim-source"
+      ]
+    }
+  ],
   "conclusion": [
     {
       "kind": "interpretation",
@@ -922,5 +1953,230 @@
       "caveat": "목표가는 외부 전망이며 실제 수익이나 적정가를 보장하지 않습니다.",
       "literalTerms": []
     }
-  ]
+  ],
+  "executive": [
+    {
+      "kind": "interpretation",
+      "text": "매출 {{obs:revenue.2025}}와 FCF {{obs:fcf.2025}}를 함께 확인하는 가상 연구 사례입니다.",
+      "sourceIds": [],
+      "caveat": "가상 자료이며 실제 기업 판단에 사용할 수 없습니다.",
+      "literalTerms": []
+    }
+  ],
+  "valuation": [
+    {
+      "kind": "fact",
+      "text": "가상 제공사 PER은 {{obs:per}}입니다. 제공 기준을 연결하는 입력 구조 예시입니다.",
+      "sourceIds": [
+        "market-source"
+      ],
+      "literalTerms": []
+    }
+  ],
+  "research": {
+    "profile": "standard",
+    "intent": "final",
+    "scopeReason": "표준 기업분석 계약을 검사하는 가상 예시. 실제 조사 완료 기록이 아닙니다.",
+    "financialModel": "non-financial",
+    "output": "html",
+    "coverage": [
+      {
+        "topic": "business",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [],
+        "attempts": []
+      },
+      {
+        "topic": "financials",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [],
+        "attempts": []
+      },
+      {
+        "topic": "valuation",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [
+          "per"
+        ],
+        "attempts": []
+      },
+      {
+        "topic": "consensus",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [
+          "target.mean"
+        ],
+        "attempts": []
+      },
+      {
+        "topic": "industry",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [],
+        "attempts": []
+      },
+      {
+        "topic": "events",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [],
+        "attempts": []
+      },
+      {
+        "topic": "conclusion",
+        "status": "done",
+        "reason": "가상 입력의 구조·완료 조건 검사",
+        "sourceIds": [
+          "financial-source"
+        ],
+        "observationIds": [],
+        "attempts": []
+      }
+    ],
+    "checks": [
+      {
+        "kind": "sources",
+        "status": "done",
+        "reviewedAt": "2026-10-09T09:00:00+09:00",
+        "record": "가상 검수 기록: 동작 검사 전용이며 실제 원문·브라우저 검수의 증거가 아님",
+        "sourceIds": [
+          "financial-source",
+          "market-source",
+          "interim-source"
+        ],
+        "observationIds": [
+          "revenue.2023",
+          "operatingProfit.2023",
+          "netIncome.2023",
+          "assets.2023",
+          "liabilities.2023",
+          "equity.2023",
+          "cash.2023",
+          "debt.2023",
+          "cfo.2023",
+          "capex.2023",
+          "revenue.2024",
+          "operatingProfit.2024",
+          "netIncome.2024",
+          "assets.2024",
+          "liabilities.2024",
+          "equity.2024",
+          "cash.2024",
+          "debt.2024",
+          "cfo.2024",
+          "capex.2024",
+          "revenue.2025",
+          "operatingProfit.2025",
+          "netIncome.2025",
+          "assets.2025",
+          "liabilities.2025",
+          "equity.2025",
+          "cash.2025",
+          "debt.2025",
+          "cfo.2025",
+          "capex.2025",
+          "price",
+          "target.kb",
+          "target.nh",
+          "target.yuanta",
+          "costOfSales.2023",
+          "grossProfit.2023",
+          "sga.2023",
+          "profitBeforeTax.2023",
+          "incomeTax.2023",
+          "currentAssets.2023",
+          "nonCurrentAssets.2023",
+          "currentLiabilities.2023",
+          "nonCurrentLiabilities.2023",
+          "receivables.2023",
+          "inventory.2023",
+          "cfi.2023",
+          "cff.2023",
+          "costOfSales.2024",
+          "grossProfit.2024",
+          "sga.2024",
+          "profitBeforeTax.2024",
+          "incomeTax.2024",
+          "currentAssets.2024",
+          "nonCurrentAssets.2024",
+          "currentLiabilities.2024",
+          "nonCurrentLiabilities.2024",
+          "receivables.2024",
+          "inventory.2024",
+          "cfi.2024",
+          "cff.2024",
+          "costOfSales.2025",
+          "grossProfit.2025",
+          "sga.2025",
+          "profitBeforeTax.2025",
+          "incomeTax.2025",
+          "currentAssets.2025",
+          "nonCurrentAssets.2025",
+          "currentLiabilities.2025",
+          "nonCurrentLiabilities.2025",
+          "receivables.2025",
+          "inventory.2025",
+          "cfi.2025",
+          "cff.2025",
+          "operatingProfit.q2",
+          "revenue.q2",
+          "per"
+        ],
+        "evidenceSha256": "b55a6323bb0fdfe0a8f2423c168b1296bfcefcf0d2bc95d39c6cf8f5c9cee69e",
+        "rendererSha256": "192cadcff82f14111071c6d883d2914db9e28faabfb62649816480bfbf33e847"
+      },
+      {
+        "kind": "desktop",
+        "status": "done",
+        "reviewedAt": "2026-10-09T09:00:00+09:00",
+        "record": "가상 검수 기록: 동작 검사 전용이며 실제 원문·브라우저 검수의 증거가 아님",
+        "sourceIds": [],
+        "observationIds": [],
+        "evidenceSha256": "b55a6323bb0fdfe0a8f2423c168b1296bfcefcf0d2bc95d39c6cf8f5c9cee69e",
+        "rendererSha256": "192cadcff82f14111071c6d883d2914db9e28faabfb62649816480bfbf33e847"
+      },
+      {
+        "kind": "mobile",
+        "status": "done",
+        "reviewedAt": "2026-10-09T09:00:00+09:00",
+        "record": "가상 검수 기록: 동작 검사 전용이며 실제 원문·브라우저 검수의 증거가 아님",
+        "sourceIds": [],
+        "observationIds": [],
+        "evidenceSha256": "b55a6323bb0fdfe0a8f2423c168b1296bfcefcf0d2bc95d39c6cf8f5c9cee69e",
+        "rendererSha256": "192cadcff82f14111071c6d883d2914db9e28faabfb62649816480bfbf33e847"
+      },
+      {
+        "kind": "print",
+        "status": "not-applicable",
+        "reviewedAt": null,
+        "record": "가상 검수 기록: 동작 검사 전용이며 실제 원문·브라우저 검수의 증거가 아님",
+        "sourceIds": [],
+        "observationIds": [],
+        "evidenceSha256": "b55a6323bb0fdfe0a8f2423c168b1296bfcefcf0d2bc95d39c6cf8f5c9cee69e",
+        "rendererSha256": "192cadcff82f14111071c6d883d2914db9e28faabfb62649816480bfbf33e847"
+      }
+    ]
+  }
 }

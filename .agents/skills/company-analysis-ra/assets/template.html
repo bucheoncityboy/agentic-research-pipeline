@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{TITLE}} | Company Analysis RA</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script id="chart-library">{{CHART_LIBRARY_JS}}</script>
 <style>
 :root{--navy:#183e63;--ink:#182a3b;--muted:#647586;--border:#dbe2e8;--wash:#f3f6f8;--teal:#1b8077;--amber:#946b30}
 *{box-sizing:border-box}html{scroll-behavior:auto}body{margin:0;overflow-wrap:anywhere;background:#edf1f4;color:var(--ink);font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:14px;line-height:1.75;display:flex;align-items:flex-start}a{color:var(--navy);text-decoration:none}a:hover{text-decoration:underline}p{margin:0 0 12px}small{font-size:11px}strong{font-weight:700}details>summary{cursor:pointer}summary:focus-visible,a:focus-visible,.table-scroll:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
@@ -19,36 +19,40 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin:0;font-variant-n
 @media(max-width:1000px){nav{width:148px;padding-left:12px;padding-right:12px}main{width:calc(100% - 148px);padding:30px 28px}.metric .value{font-size:16px}.financial-table th:first-child{width:42%}.charts-grid{grid-template-columns:1fr}.chart-canvas{height:260px}}
 @media(max-width:680px){body{display:block;background:#fff}nav{position:relative;width:100%;height:auto;padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px;overflow-x:auto;white-space:nowrap;align-items:center}nav .logo{font-size:11px;padding:0 12px 0 0}nav .logo span,nav .disclaimer{display:none}nav a{padding:5px 8px;flex-shrink:0;border:0;font-size:10px}main{width:100%;margin:0;padding:24px 18px;box-shadow:none}.report-header h1{font-size:28px}.header-line{font-size:8px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric{padding:12px}.metric .value{font-size:17px}section h2{font-size:17px}.financial-table{min-width:560px}.table-heading{gap:8px}.table-heading h3{font-size:13px}.table-unit{font-size:9px}.charts-grid{grid-template-columns:1fr}.chart-canvas{height:240px}table{font-size:11px}th,td{padding:7px 9px}.report-header .sub{overflow-wrap:anywhere}}
 @media print{@page{size:A4;margin:14mm 13mm}html{scroll-behavior:auto}body{display:block;background:#fff;color:#182a3b;font-size:10px;print-color-adjust:exact;-webkit-print-color-adjust:exact}nav{display:none}main{width:100%;max-width:none;margin:0;padding:0;box-shadow:none}.report-header{border-top-width:3px;padding-top:12px}.report-header h1{font-size:26px}.report-header .sub{font-size:9px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.metric{padding:8px}.metric .value{font-size:14px}.metric .label{font-size:8px;min-height:25px}.metric .change,.metric-reason{font-size:8px}section{margin-bottom:24px}section h2{font-size:15px;break-after:avoid}h3,.table-heading{break-after:avoid}table{font-size:9px}.financial-table{min-width:0}.financial-table th,.financial-table td{padding:4px 8px}.financial-table .detail th,.financial-table .ratio th,.financial-table .ratio td{font-size:8px}thead{display:table-header-group}tr{break-inside:avoid}.statement,.chart-wrap{break-inside:avoid}.table-scroll{overflow:visible}.table-notes{font-size:8px}.charts-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.chart-canvas{height:190px}.chart-wrap{padding:10px}.chart-wrap figcaption{font-size:10px}.claim-caveat,.claim-kind{font-size:8px}section li{break-inside:avoid}.table-notes details>p,.chart-evidence>div,.chart-evidence>p,.report-footer details>p,.data-status>p{display:block!important}details>summary{font-size:8px}.report-footer{font-size:8px}.report-footer li{break-inside:avoid}.report-footer li>a{font-size:9px}a{color:inherit}.citation{font-size:8px}}
+.executive-thesis{border-left:3px solid var(--teal);padding:14px 18px;background:#f5f8fa;margin-bottom:24px}.executive-thesis h3{margin:0 0 10px}.executive-thesis li{margin-bottom:12px}.executive-thesis p{margin:4px 0}.coverage{margin-top:12px;font-size:10px;color:var(--muted)}.coverage table{margin:10px 0}.coverage p{margin:8px 0}@media print{.coverage>div,.coverage>p,.coverage>small{display:block!important}.executive-thesis{break-inside:avoid;font-size:10px}}
 </style>
 </head>
 <body>
 <nav aria-label="보고서 목차">
 <div class="logo">COMPANY NOTE<span>RESEARCH RA</span></div>
-<a href="#s0">핵심 지표</a><a href="#sa">01 기업과 사업</a><a href="#s1">02 재무제표</a><a href="#s1c">03 실적 차트</a><a href="#s2">04 실적과 해석</a><a href="#s3">05 핵심 쟁점</a><a href="#s1l">06 산업 선행자료</a><a href="#s1d">07 수급과 파생</a><a href="#s2n">08 공시와 뉴스</a><a href="#s4">09 주요 일정</a><a href="#s5">10 리서치 결론</a><a href="#sources">자료와 근거</a>
-<div class="disclaimer">Company Analysis RA<br>공개자료 기반 리서치 초안</div>
+{{NAV_LINKS}}
+<div class="disclaimer">Company Analysis RA<br>공개자료 기업분석</div>
 </nav>
 <main>
 <header class="report-header">
 <div class="header-line"><span>EQUITY RESEARCH / COMPANY NOTE</span><span>공개자료 기반 기업분석</span></div>
 <h1>{{TITLE}}</h1>
-<div class="sub">{{SECTOR}} · 정보 기준시각 {{AS_OF}}<br>자동 데이터 검사 {{STATUS}} · 원문 대조 범위와 미확보 자료는 본문 및 확인 기록 참조</div>
+<div class="sub">{{SECTOR}} · 정보 기준시각 {{AS_OF}}<br>{{DELIVERY_STATUS}} · 자동 데이터 검사 {{STATUS}} · 원문 대조 범위와 미확보 자료는 본문 및 확인 기록 참조</div>
 {{WARNINGS}}
+{{COVERAGE}}
 </header>
+{{EXECUTIVE}}
 <section id="s0" aria-label="핵심 지표"><div class="exec-summary"><h3>KEY FINANCIALS</h3><div class="metrics">{{SUMMARY}}</div></div></section>
 <section id="sa"><h2><span class="section-num">01</span>기업 개요와 사업 구조</h2>{{PROFILE}}</section>
 <section id="s1"><h2><span class="section-num">02</span>재무제표와 컨센서스</h2>{{FINANCIALS}}<div class="subsection-heading"><h3>하우스별 목표가와 집계 기준</h3></div>{{CONSENSUS}}</section>
-<section id="s1c"><h2><span class="section-num">03</span>실적과 현금흐름 차트</h2>{{CHARTS}}</section>
+{{CHART_SECTION}}
 <section id="s2"><h2><span class="section-num">04</span>실적 변화와 시장 해석</h2>{{NARRATIVE}}</section>
 <section id="s3"><h2><span class="section-num">05</span>핵심 쟁점 · Bull / Bear</h2>{{DEBATES}}</section>
-<section id="s1l"><h2><span class="section-num">06</span>산업 선행자료</h2>{{INDICATORS}}</section>
-<section id="s1d"><h2><span class="section-num">07</span>파생상품과 수급</h2>{{DERIVATIVES}}</section>
-<section id="s2n"><h2><span class="section-num">08</span>주요 공시와 뉴스</h2>{{NEWS}}</section>
-<section id="s4"><h2><span class="section-num">09</span>주요 일정과 확인 상태</h2>{{CALENDAR}}</section>
-<section id="s5"><h2><span class="section-num">10</span>리서치 결론과 추가 확인 사항</h2>{{CONCLUSION}}</section>
+{{VALUATION_SECTION}}
+{{INDUSTRY_SECTION}}
+{{FLOW_SECTION}}
+{{NEWS_SECTION}}
+{{CALENDAR_SECTION}}
+<section id="s5"><h2><span class="section-num">11</span>리서치 결론과 추가 확인 사항</h2>{{CONCLUSION}}</section>
 <footer class="report-footer" id="sources"><strong>자료와 근거 위치</strong>{{SOURCES}}<p class="generation-note">Generated by Company Analysis RA · {{AS_OF}}</p></footer>
 </main>
 <script id="chart-data" type="application/json">{{CHART_DATA_JSON}}</script>
-<script>
+<script id="chart-runtime">
 (function () {
   var payload = document.getElementById('chart-data');
   if (!payload) return;

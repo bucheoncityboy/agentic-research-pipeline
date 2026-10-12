@@ -1,9 +1,11 @@
 {
   "name": "agentic-research-pipeline",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "tsx src/harness.ts",
@@ -13,6 +15,14 @@
     "check:privacy": "tsx src/privacy-scan.ts",
     "pack:skill": "npm pack ./.agents/skills/company-analysis-ra"
   },
-  "dependencies": { "parse5": "8.0.1", "zod": "4.6.5" },
-  "devDependencies": { "@types/node": "^22.0.0", "tsx": "^4.0.0", "typescript": "^5.0.0" }
+  "dependencies": {
+    "chart.js": "4.5.1",
+    "parse5": "8.0.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
 }

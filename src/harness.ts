@@ -11,11 +11,13 @@ import { runEdgeCases } from "./edge-cases.js";
 import { runFileCases } from "./file-cases.js";
 import { runChartCases } from "./chart-cases.js";
 import { runFinancialCases } from "./financial-cases.js";
+import { runResearchCases } from "./research-cases.js";
+import { createResearchFixture, stampFixtureReviews } from "./research-fixture.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const skillRoot = resolve(root, ".agents/skills/company-analysis-ra");
 if (process.argv.includes("--write-fixture")) {
-  writeFileSync(resolve(skillRoot, "fixtures/example.json"), `${JSON.stringify(createFixture(), null, 2)}\n`, "utf8");
+  writeFileSync(resolve(skillRoot, "fixtures/example.json"), `${JSON.stringify(createResearchFixture(), null, 2)}\n`, "utf8");
 }
 const input: ResearchReport = JSON.parse(readFileSync(resolve(skillRoot, "fixtures/example.json"), "utf8")) as ResearchReport;
 let cases = 0;
@@ -28,7 +30,7 @@ const observation = (report: ResearchReport, id: string): ResearchReport["observ
 };
 
 test("complete fixture builds with explicit synthetic warning", () => { const result = build(input); assert.equal(result.gate.status, "PARTIAL"); assert.ok(result.html); assert.match(result.html, /가상 fixture/); assert.deepEqual(verify(input, result.html).errors, []); });
-test("complete non-fixture contract can pass automatic checks", () => { const report = structuredClone(input); report.fixture = false; assert.equal(build(report).gate.status, "PASS"); });
+test("complete non-fixture contract can pass automatic checks", () => { const report = structuredClone(input); report.fixture = false; if (report.research) stampFixtureReviews(report); assert.equal(build(report).gate.status, "PASS"); });
 test("mean excludes unavailable target and preserves chart null", () => {
   const result = prepare(input); assert.ok(result.report); assert.equal(observation(result.report, "target.mean").value, 55000); assert.equal(observation(result.report, "fcf.2025").value, 25);
   const output = build(input); assert.ok(output.html); const payload = /<script id="chart-data" type="application\/json">([\s\S]*?)<\/script>/.exec(output.html)?.[1]; assert.ok(payload);
@@ -81,7 +83,7 @@ test("sum checks contiguous quarter periods", () => {
   observation(report, "q2").period.start = "2025-03-01"; assert.equal(build(report).gate.status, "FAIL");
 });
 test("skill references resolve within the shipped package", () => {
-  for (const path of ["SKILL.md", "references/data-contract.md", "references/research.md", "references/presentation.md", "references/setup.md"]) {
+  for (const path of ["SKILL.md", "references/data-contract.md", "references/research.md", "references/presentation.md", "references/completion.md", "references/setup.md"]) {
     for (const match of readFileSync(resolve(skillRoot, path), "utf8").matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
       const target = match[1]; assert.ok(target); if (/^https?:/.test(target)) continue;
       const targetPath = fileURLToPath(new URL(target, pathToFileURL(resolve(skillRoot, path))));
@@ -101,4 +103,4 @@ test("CLI writes gate and rejects modified output with nonzero exit", () => {
   const checked = spawnSync(process.execPath, [...args, "verify", inputPath, outputPath], { encoding: "utf8", cwd: root }); assert.equal(checked.status, 1); assert.match(checked.stdout, /FAIL/);
 });
 console.log(`${cases} behavioral checks passed.`);
-console.log(`${cases + runEdgeCases() + runFileCases() + runChartCases() + runFinancialCases()} total behavioral checks passed.`);
+console.log(`${cases + runEdgeCases() + runFileCases() + runChartCases() + runFinancialCases() + runResearchCases()} total behavioral checks passed.`);

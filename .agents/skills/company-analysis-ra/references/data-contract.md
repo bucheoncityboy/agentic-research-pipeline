@@ -6,7 +6,7 @@
 
 | 필드 | 내용 |
 | --- | --- |
-| schemaVersion, asOf, fixture | 버전 `3.1`, 시간대 포함 정보 기준시각, 테스트 여부. 실제 기업은 fixture=false. |
+| schemaVersion, asOf, fixture | 새 입력은 `3.2`, 시간대 포함 정보 기준시각, 테스트 여부. `3.1` 입력도 호환한다. 실제 기업은 fixture=false. |
 | company | 법인명·티커·시장·통화·섹터·결산월일. 한국 시장 이름은 KR로 시작한다. |
 | sources | id·name·url·publishedAt·collectedAt·locator·excerpt·access. secondary는 originalUrl도 필수다. |
 | observations | 숫자 또는 null, 원래 단위, 계정 metric, 비교 범위 scope, 관측시각, 기간, 회계 basis, 상태, sourceIds. |
@@ -16,6 +16,9 @@
 | charts | id·title·type·labels·datasets. datasets에는 숫자 배열 대신 observationIds를 넣는다. |
 | profile, narrative, indicators, derivatives, conclusion | 근거와 관측치 토큰이 있는 claim 배열. |
 | debates, news, calendar | Bull/Bear claim 배열, 뉴스 출처 ID, 확정/미확정 일정과 근거 ID. |
+| executive, valuation | 핵심 판단·확인 조건 요약과 밸류에이션 claim 배열. 기존 claim 규칙을 동일하게 적용한다. |
+| financialRows | 업종별 표 계정·라벨·서식·삽입 위치: statement, metric, label, style, afterMetric. 기존 계정 라벨도 덮어쓸 수 있다. |
+| research | profile, intent, scopeReason, financialModel, output, coverage, checks. 조사 범위와 검수 기록. [완료 기준](completion.md) 참조. |
 
 원자료 값에 `"33,700"`, `"약 3조"` 같은 표시 문자열을 넣지 않는다. `value: 33700, unit: "KRW"`처럼 저장한다. 같은 표의 단위는 먼저 통일하며 단위 변환은 수집 기록에 설명한다. 부족한 재무도 삭제하지 않고 해당 관측치에 null·missing·reason을 남긴다. 미적용은 not-applicable과 사유로 구분한다.
 
@@ -38,10 +41,13 @@
 | difference | 두 관측치 차감. 같은 기간의 CFO−양수 CAPEX, 차입금−현금 등. 같은 시작일의 누적 실적 차감으로 분기값을 구하는 경우도 허용한다. |
 | upside | `[목표가ID, 현재가ID]`는 targetPrice와 price인 market 관측치다. 같은 통화·scope에서 `(목표가/현재가−1)×100`으로 계산. 출력 metric은 upside, unit은 %, 기간은 현재가와 같아야 한다. |
 | ratio-percent | `[분자ID, 분모ID]`를 같은 단위·scope에서 `분자/분모×100`으로 계산. 출력 unit은 %. |
+| growth-percent | `[현재ID, 과거ID]`를 같은 흐름 metric·기간 kind·단위·scope에서 `(현재/과거−1)×100`으로 계산. 출력 period는 현재와 같다. 과거값이 0·음수면 결과 null/not-applicable과 사유를 기록한다. |
 
 직접 집계 컨센서스의 mean 입력 목록은 표시한 brokers의 targetId 목록과 같아야 한다. 목표가가 없는 하우스는 표와 차트에서 null, 집계에서는 제외한다. 제공사 컨센서스는 sourceIds가 있는 별도 원자료 관측치로 입력하고 직접 집계 평균이라고 쓰지 않는다.
 
 하우스명은 유니코드 정규화·공백 제거·대소문자 통일 후 중복을 검사한다. 목표가와 컨센서스는 동일 주식 scope·보고서 통화의 targetPrice/market/instant 관측치이며 확보된 값은 양수다. mean 외의 계산은 결측 입력 하나라도 있으면 null이다. difference/upside/ratio-percent는 결측 여부와 관계없이 입력 ID 두 개가 필요하다. 누적 차감으로 분기값을 만들 때는 같은 계정·시작일의 YTD끼리 차감하고 출력 kind를 quarter로 둔다.
+
+growth-percent도 두 입력이 필요하다. 시점 잔액의 증감을 흐름 증감률로 넣지 않는다. YoY/QoQ는 출력 라벨과 본문에서 비교 기간을 명시하며 서로 다른 누적 길이를 단순 비교하지 않는다. 기준값 0·음수의 N/A는 결측과 구분하고 절대 변화나 흑자/적자 전환으로 설명한다.
 
 계산 결과의 상태는 값이 확보된 입력에서 결정한다. 전망이 하나라도 있으면 estimate, 그다음 잠정이 있으면 preliminary, 나머지는 actual이다. 전부 또는 필수 입력이 미확보이면 missing이다. 어떤 필수 입력이 부족한지 gate의 missingRequiredIds와 warnings에 남는다. 자산=부채+자본은 동일한 기간·회계 범위·단위에서 검사하며 허용 차이는 자산 절댓값의 0.01%다. 보고된 반올림이 이 차이를 넘으면 원문의 정밀도를 높여 대조한다.
 
@@ -56,6 +62,10 @@ HBM4처럼 숫자가 포함된 제품 식별자는 literalTerms에 등록할 수
 ## 결과와 한계
 
 PASS/PARTIAL/FAIL은 자동 데이터 계약 검사 결과다. schema·시점·참조·계산·HTML·JS를 검사하지만 외부 페이지의 진실성이나 증권사 인용의 정확성을 자동으로 확인하지 않는다. Phase 5에서 원문을 대조한다. 가상 fixture는 항상 PARTIAL이며 실제 분석 근거로 사용하지 않는다.
+
+3.2의 research.coverage는 topic/status/reason/sourceIds/observationIds/attempts이며 attempts는 url/result다. research.checks는 kind/status/reviewedAt/record/sourceIds/observationIds/evidenceSha256/rendererSha256이다. 미검수 때 reviewedAt와 지문은 null, 상태는 not-run이다. 실제 대조·화면 검수 후 audit에 나온 현재 지문을 기록한다. sources 검수는 모든 원자료 숫자·문서 ID를 포함해야 한다. 기록의 목록·지문은 검수와 현재 입력/생성기를 연결하며 외부 증거를 자동 인증하지 않는다.
+
+gate.research는 state=FINAL/DRAFT/UNASSESSED, profile, blockingItems, missingReviewIds를 제공한다. FINAL은 intent=final, 자동 PASS, 선택한 필수 조사·본문·상세 재무·원문/화면 검수 충족일 때만 가능하다. 실제 입력·생성기·HTML 변경은 판정을 무효화한다. 3.1 입력은 기존 자동 검사를 유지하며 조사 상태는 UNASSESSED다. audit --final은 미완료에 종료 2, 오류에 1을 반환한다.
 
 verify는 같은 원본 입력과 현재 템플릿에서 다시 생성한 HTML과 전달할 HTML이 정확히 같은지 확인한다. 값·차트·문장을 직접 수정하면 FAIL이다. 수정은 JSON을 바꾼 뒤 다시 build한다. FAIL인 build는 새 HTML을 쓰지 않으며 .gate.json을 기록한다. 같은 출력 경로에 과거 HTML이 남아 있으면 그것을 이번 성공 결과로 전달하지 않는다.
 
