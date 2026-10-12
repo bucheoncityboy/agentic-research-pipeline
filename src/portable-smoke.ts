@@ -47,12 +47,14 @@ try {
   const input = resolve(destination, "fixtures/example.json");
   const output = resolve(destination, "results/example.html");
   npm(["--prefix", destination, "run", "verify", "--", input, output], workspace);
+  npm(["--prefix", destination, "run", "audit", "--", input], workspace);
 
   // A runtime-only install must still contain tsx and the renderer's packages.
   npm(["ci", "--omit=dev", "--no-audit", "--no-fund"], destination);
   const externalOutput = resolve(workspace, "작업 결과", "report.html");
   npm(["--prefix", destination, "run", "build", "--", input, externalOutput], workspace);
   npm(["--prefix", destination, "run", "verify", "--", input, externalOutput], workspace);
+  npm(["--prefix", destination, "run", "audit", "--", input], workspace);
   const gate = JSON.parse(readFileSync(`${externalOutput}.gate.json`, "utf8")) as { status: string; errors: string[] };
   assert.equal(gate.status, "PARTIAL");
   assert.deepEqual(gate.errors, []);
@@ -62,11 +64,12 @@ try {
   assert.ok(Array.isArray(archive) && archive[0] && typeof archive[0] === "object");
   const packedFiles = archive[0].files as Array<{ path: string }>;
   const paths = packedFiles.map((entry) => entry.path);
-  for (const required of ["SKILL.md", "npm-shrinkwrap.json", "scripts/report.ts", "assets/template.html", "references/setup.md"]) {
+  for (const required of ["SKILL.md", "npm-shrinkwrap.json", "scripts/report.ts", "scripts/audit.ts", "scripts/quality.ts", "assets/template.html", "references/setup.md", "references/completion.md"]) {
     assert.ok(paths.includes(required), `Archive omits ${required}`);
   }
   assert.ok(paths.every((path) => !/^(?:node_modules|results|src)\//.test(path)), "Archive includes environment files");
-  console.log(JSON.stringify({ status: "PASS", checks: ["isolated install", "typecheck", "build and verify", "runtime-only install", "external working directory", "archive contents"], workspace }, null, 2));
+  const html = readFileSync(externalOutput, "utf8"); assert.ok(html.includes('id="chart-library"')); assert.ok(!/<script\b[^>]*\bsrc=/i.test(html));
+  console.log(JSON.stringify({ status: "PASS", checks: ["isolated install", "typecheck", "build and verify", "research audit", "runtime-only install", "external working directory", "bundled offline chart runtime", "archive contents"], workspace }, null, 2));
 } catch (error: unknown) {
   console.error(`Portable check artifacts: ${workspace}`);
   throw error;

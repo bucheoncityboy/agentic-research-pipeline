@@ -66,7 +66,7 @@ export function runCli(args: string[], engine: Engine): number {
       else gate = engine.verify(input, readFileSync(outputFile, "utf8"));
     } catch (error: unknown) { gate = engine.failedGate(error instanceof Error ? error.message : String(error)); }
     writePair(outputFile, gatePath, html, gate);
-    console.log(JSON.stringify({ status: gate.status, errors: gate.errors, warnings: gate.warnings, outputWritten: html !== null, gatePath }, null, 2));
+    console.log(JSON.stringify({ status: gate.status, research: gate.research, errors: gate.errors, warnings: gate.warnings, outputWritten: html !== null, gatePath }, null, 2));
     return gate.status === "FAIL" ? 1 : 0;
   } catch (error: unknown) {
     console.error(JSON.stringify({ status: "FAIL", outputWritten: false, error: error instanceof Error ? error.message : String(error) }, null, 2)); return 1;

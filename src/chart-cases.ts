@@ -10,7 +10,7 @@ export function runChartCases(): number {
   const result = build(input); assert.ok(result.html);
   const scripts = [...result.html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   const json = scripts.find((match) => (match[1] ?? "").includes('type="application/json"'))?.[2]; assert.ok(json);
-  const runtime = scripts.find((match) => !(match[1] ?? "").includes("src=") && !(match[1] ?? "").includes("application/json"))?.[2]; assert.ok(runtime);
+  const runtime = scripts.find((match) => (match[1] ?? "").includes('id="chart-runtime"'))?.[2]; assert.ok(runtime);
   function execute(options: { noLibrary?: boolean; missingCanvas?: boolean; missingPayload?: boolean; throwFirst?: boolean }) {
     const calls: Config[] = []; const fallbacks: string[] = [];
     const document = {

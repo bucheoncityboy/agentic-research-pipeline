@@ -8,11 +8,13 @@ type Helpers = { escape: (text: string) => string; citation: (ids: string[]) => 
 const definitions: Record<Statement, { title: string; rows: Row[] }> = {
   income: { title: "손익계산서", rows: [
     { metric: "revenue", label: "매출액", style: "total" },
+    { metric: "revenueGrowth", label: "매출 증감률 (%)", style: "ratio" },
     { metric: "costOfSales", label: "매출원가", style: "detail" },
     { metric: "grossProfit", label: "매출총이익" },
     { metric: "sga", label: "판매비와관리비", style: "detail" },
     { metric: "operatingProfit", label: "영업이익", style: "total" },
     { metric: "operatingMargin", label: "영업이익률 (%)", style: "ratio" },
+    { metric: "operatingProfitGrowth", label: "영업이익 증감률 (%)", style: "ratio" },
     { metric: "financeIncome", label: "금융수익", style: "detail" },
     { metric: "financeCosts", label: "금융비용", style: "detail" },
     { metric: "otherIncome", label: "기타영업외수익", style: "detail" },
@@ -30,6 +32,7 @@ const definitions: Record<Statement, { title: string; rows: Row[] }> = {
     { metric: "liquidityBroad", label: "현금성자산 (단기금융상품 등 포함)", style: "detail" },
     { metric: "receivables", label: "매출채권", style: "detail" },
     { metric: "inventory", label: "재고자산", style: "detail" },
+    { metric: "payables", label: "매입채무", style: "detail" },
     { metric: "nonCurrentAssets", label: "비유동자산" },
     { metric: "ppe", label: "유형자산", style: "detail" },
     { metric: "assets", label: "자산총계", style: "total" },
@@ -71,8 +74,21 @@ export function financialDisplay(unit: string): { unit: string; divisor: number 
 }
 export function renderFinancials(report: ResearchReport, helpers: Helpers): string {
   const { escape, citation } = helpers;
-  const stocks = new Set(definitions.balance.rows.map((row) => row.metric));
-  const flows = new Set([...definitions.income.rows, ...definitions.cashflow.rows].map((row) => row.metric));
+  const tableDefinitions = structuredClone(definitions);
+  const customized = new Set<string>();
+  for (const custom of report.financialRows ?? []) {
+    const key = `${custom.statement}.${custom.metric}`;
+    if (customized.has(key)) throw new Error(`Duplicate financial row: ${key}`);
+    customized.add(key);
+    const rows = tableDefinitions[custom.statement].rows;
+    const existing = rows.findIndex((row) => row.metric === custom.metric);
+    const row: Row = { metric: custom.metric, label: custom.label, ...(custom.style ? { style: custom.style } : {}) };
+    if (existing >= 0) rows[existing] = row;
+    else if (custom.afterMetric) { const anchor = rows.findIndex((row) => row.metric === custom.afterMetric); if (anchor < 0) throw new Error(`Unknown financial row anchor: ${custom.afterMetric}`); rows.splice(anchor + 1, 0, row); }
+    else rows.push(row);
+  }
+  const stocks = new Set(tableDefinitions.balance.rows.map((row) => row.metric));
+  const flows = new Set([...tableDefinitions.income.rows, ...tableDefinitions.cashflow.rows].map((row) => row.metric));
   for (const row of report.observations.filter((row) => row.basis !== "market")) {
     if (stocks.has(row.metric) && row.period.kind !== "instant") throw new Error(`Financial stock requires instant period: ${row.id}`);
     if (flows.has(row.metric) && row.period.kind === "instant") throw new Error(`Financial flow requires FY, quarter or YTD period: ${row.id}`);
@@ -95,19 +111,21 @@ export function renderFinancials(report: ResearchReport, helpers: Helpers): stri
     return `<td class="num${row.status === "preliminary" ? " preliminary" : row.status === "estimate" ? " estimate" : ""}"><span data-observation-id="${escape(row.id)}" data-raw-value="${row.value}" title="${escape(`${row.label}: ${row.value} ${row.unit} · ${statusLabel[row.status]}`)}">${displayed < 0 ? `(${text})` : text}</span>${marker ? `<sup class="value-status">${marker}</sup>` : ""}</td>`;
   };
   const table = (statement: Statement, columns: Column[], context: Context, suffix: string, required: boolean): string => {
-    const definition = definitions[statement];
+    const definition = tableDefinitions[statement];
     if (!required) columns = columns.filter((column) => definition.rows.some((row) => !["netIncome", "operatingMargin", "netMargin"].includes(row.metric) && find(column, row.metric)));
     if (!columns.length) return "";
     const rows = definition.rows.filter((row) => columns.some((column) => find(column, row.metric)));
     if (!rows.some((row) => !["netIncome", "operatingMargin", "netMargin"].includes(row.metric)) && !required) return "";
     const used = columns.flatMap((column) => rows.flatMap((row) => { const observation = find(column, row.metric); return observation ? [observation] : []; }));
+    const hasAmounts = used.some((row) => row.unit !== "%"); const hasPercent = used.some((row) => row.unit === "%");
+    const displayUnit = `${hasAmounts ? financialDisplay(context.unit).unit : ""}${hasPercent ? hasAmounts ? ", %" : "%" : ""}`;
     const notes = [
       "금액은 표시 단위로 환산·반올림했습니다. 괄호는 음수, —는 미확보, P는 잠정, E는 전망입니다. 원래 값·단위는 숫자에 마우스를 올려 확인할 수 있습니다.",
       ...(rows.some((row) => row.metric === "capex") ? ["CAPEX는 양수 투자지출이며 FCF는 영업활동 현금흐름−CAPEX입니다. 현금취득 범위·리스·기업결합 포함 여부는 본문과 원문 정의를 확인하십시오."] : []),
       ...(rows.some((row) => row.metric === "netDebt") ? ["순차입금은 이자부 차입금−현금 및 현금성자산입니다. 차입금 범위는 원문을 따르며 단기금융상품 등을 포함한 넓은 현금성자산과 구분합니다."] : []),
     ];
     const tableId = `statement-${statement}-${suffix}`;
-    return `<article class="statement" data-statement="${statement}"><div class="table-heading"><h3 id="${escape(tableId)}">${definition.title} <span>${escape((suffix.startsWith("annual") || suffix.startsWith("FY")) ? "연간" : suffix.startsWith("quarter") ? "분기" : suffix.startsWith("YTD") ? "누적" : "기말")}</span></h3><span class="table-unit">${basisLabel[context.basis]} · 단위: ${escape(financialDisplay(context.unit).unit)}${rows.some((row) => row.style === "ratio") ? ", %" : ""}</span></div><div class="table-scroll" tabindex="0" role="region" aria-labelledby="${escape(tableId)}"><table class="financial-table"><thead><tr><th scope="col">계정과목</th>${columns.map((column) => `<th scope="col" class="num">${escape(column.label)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr class="${row.style ?? "regular"}"><th scope="row">${escape(row.label)}</th>${columns.map((column) => cell(find(column, row.metric), context.unit)).join("")}</tr>`).join("")}</tbody></table></div><div class="table-notes"><p class="table-context">범위: ${escape(context.scope)}</p>${columns.map((column) => { const items = used.filter((row) => column.rows.includes(row)); return `<p><strong>${escape(column.label)}</strong> · ${[...new Set(items.map((row) => statusLabel[row.status]))].join(" / ")} · ${citation(items.flatMap((row) => row.sourceIds))}</p>`; }).join("")}<details><summary>단위·계정 정의</summary>${notes.map((note) => `<p>${escape(note)}</p>`).join("")}</details></div></article>`;
+    return `<article class="statement" data-statement="${statement}"><div class="table-heading"><h3 id="${escape(tableId)}">${definition.title} <span>${escape((suffix.startsWith("annual") || suffix.startsWith("FY")) ? "연간" : suffix.startsWith("quarter") ? "분기" : suffix.startsWith("YTD") ? "누적" : "기말")}</span></h3><span class="table-unit">${basisLabel[context.basis]} · 단위: ${escape(displayUnit)}</span></div><div class="table-scroll" tabindex="0" role="region" aria-labelledby="${escape(tableId)}"><table class="financial-table"><thead><tr><th scope="col">계정과목</th>${columns.map((column) => `<th scope="col" class="num">${escape(column.label)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr class="${row.style ?? "regular"}"><th scope="row">${escape(row.label)}</th>${columns.map((column) => cell(find(column, row.metric), context.unit)).join("")}</tr>`).join("")}</tbody></table></div><div class="table-notes"><p class="table-context">범위: ${escape(context.scope)}</p>${columns.map((column) => { const items = used.filter((row) => column.rows.includes(row)); return `<p><strong>${escape(column.label)}</strong> · ${[...new Set(items.map((row) => statusLabel[row.status]))].join(" / ")} · ${citation(items.flatMap((row) => row.sourceIds))}</p>`; }).join("")}<details><summary>단위·계정 정의</summary>${notes.map((note) => `<p>${escape(note)}</p>`).join("")}</details></div></article>`;
   };
   const years = [...report.financials].sort((a, b) => a.fiscalYear - b.fiscalYear);
   const anchor = observations.get(years[0]!.metrics.revenue)!;
@@ -118,10 +136,10 @@ export function renderFinancials(report: ResearchReport, helpers: Helpers): stri
     return { label: statement === "balance" ? period.end : String(year.fiscalYear), period, rows: report.observations.filter((row) => samePeriod(row.period, period) && row.scope === context.scope && row.basis === context.basis) };
   });
   const annualIds = new Set(years.flatMap((year) => Object.values(year.metrics)));
-  const recent = report.observations.filter((row) => !annualIds.has(row.id) && row.basis !== "market" && row.period.end > observations.get(years.at(-1)!.metrics.revenue)!.period.end && Object.values(definitions).some((definition) => definition.rows.some((definitionRow) => definitionRow.metric === row.metric)));
+  const recent = report.observations.filter((row) => !annualIds.has(row.id) && row.basis !== "market" && row.period.end > observations.get(years.at(-1)!.metrics.revenue)!.period.end && Object.values(tableDefinitions).some((definition) => definition.rows.some((definitionRow) => definitionRow.metric === row.metric)));
   const groups = new Map<string, { context: Context; columns: Column[]; kind: Observation["period"]["kind"] }>();
   for (const row of recent) {
-    const monetaryUnit = row.unit === "%" ? recent.find((other) => other.unit !== "%" && other.scope === row.scope && other.basis === row.basis && samePeriod(other.period, row.period))?.unit : row.unit;
+    const monetaryUnit = row.unit === "%" ? recent.find((other) => other.unit !== "%" && other.scope === row.scope && other.basis === row.basis && samePeriod(other.period, row.period))?.unit ?? context.unit : row.unit;
     if (!monetaryUnit) continue;
     const key = JSON.stringify([row.scope, row.basis, row.period.kind, monetaryUnit]);
     let group = groups.get(key);

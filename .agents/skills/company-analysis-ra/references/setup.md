@@ -16,24 +16,26 @@ Node.js 20 이상과 npm이 필요하다. 복사한 스킬 폴더에서 실행�
 npm ci
 npm run example
 npm run verify -- "./fixtures/example.json" "./results/example.html"
+npm run audit -- "./fixtures/example.json"
 ```
 
 Windows PowerShell에서 실행 정책 오류가 나면 `npm.cmd`를 사용한다. `npm ci`는 처음에 npm 레지스트리에 접근할 수 있어야 한다. 인터넷이 제한된 환경에서는 조직이 제공하는 레지스트리나 패키지 캐시를 준비한다. `tsx`는 실행 의존성이므로 `npm ci --omit=dev`로 설치해도 생성·재검증이 동작한다. 타입 검사를 하려면 개발 의존성도 설치하고 `npm run typecheck`를 실행한다.
 
-가상 예제는 `results/example.html`과 `results/example.html.gate.json`을 만든다. 가상 자료를 사용하므로 `PARTIAL`이 정상이며 실제 기업분석의 근거로 사용하지 않는다.
+가상 예제는 `results/example.html`과 `results/example.html.gate.json`을 만든다. 3.2의 상세 재무·범위·검수 필드 사용법을 포함하지만 실제 자료와 검수 기록이 아니다. `PARTIAL`/`DRAFT`가 정상이며 실제 기업분석의 근거로 사용하지 않는다. 생성된 HTML은 차트와 CSS를 포함해 인터넷 없이 볼 수 있다.
 
 ## 실제 사용
 
-예시 요청: `$company-analysis-ra로 삼성전자(005930)를 현재 수집 시점 기준으로 분석하고 JSON 저장, HTML 생성, 재검증까지 수행해줘.`
+예시 요청: `$company-analysis-ra로 삼성전자(005930)를 표준 기업분석 범위로 조사하고 미완료 항목을 보충한 뒤 재무제표·핵심 판단·밸류에이션·출처·검수 기록이 있는 HTML 보고서를 만들어줘.`
 
 에이전트가 [데이터 계약](data-contract.md)과 [수집 기준](research.md)을 적용해 실제 입력을 작성한다. 사용자가 직접 JSON을 작성할 필요는 없다. 입력·출력은 사용자 작업 폴더의 절대 경로로 지정한다. 작업 폴더에서 실행하는 경우 다음처럼 스킬 경로를 명시한다:
 
 ```sh
 npm --prefix "/absolute/path/company-analysis-ra" run build -- "/absolute/path/report.json" "/absolute/path/report.html"
 npm --prefix "/absolute/path/company-analysis-ra" run verify -- "/absolute/path/report.json" "/absolute/path/report.html"
+npm --prefix "/absolute/path/company-analysis-ra" run audit -- "/absolute/path/report.json" --final
 ```
 
-`PASS`는 자동 검사 통과, `PARTIAL`은 자료 부족·확인 필요, `FAIL`은 오류다. 원문 대조와 화면 검수는 별도로 수행한다. HTML을 직접 수정하지 않고 입력이나 템플릿을 수정한 뒤 다시 생성한다.
+`PASS`는 자동 검사 통과, `PARTIAL`은 자료 부족·확인 필요, `FAIL`은 오류다. 최종본 판정은 research.state=FINAL과 audit --final 종료 0으로 확인한다. 원문 대조와 화면 검수는 실제로 수행하고 기록해야 한다. 자세한 입력과 완료 순서는 [완료 기준](completion.md)에 있다. HTML을 직접 수정하지 않고 입력이나 템플릿을 수정한 뒤 다시 생성한다.
 
 ## 공유
 

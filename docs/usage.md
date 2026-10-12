@@ -27,6 +27,8 @@ npx --no-install tsx .agents/skills/company-analysis-ra/scripts/report.ts verify
 
 로그에는 `errors`, `warnings`, `missingRequiredIds`, 입력·출력 SHA-256과 검사 범위가 기록된다. 필수 재무·주가·요약 결측, 공개일 미확인, 기준일 당일 공개시각 미확인, 오래된 시세, 가상 입력은 `PARTIAL` 사유다. 4일 초과 시세 경고는 최신 거래일·휴장 여부를 다시 확인하라는 신호이며 거래소 캘린더 검증을 대신하지 않는다.
 
+v3.2의 조사·검수 상태는 gate.research에 별도로 기록된다. 표준 범위·상세 재무·핵심 요약·원문 대조·화면 기록을 충족해야 FINAL이며, 3.1은 UNASSESSED다. `npx tsx .agents/skills/company-analysis-ra/scripts/audit.ts ./report.json`으로 누락과 현재 검수 지문을 확인한다. `--final`을 추가하면 미완료에 종료 2, 오류에 1을 반환한다. [완료 절차](../.agents/skills/company-analysis-ra/references/completion.md)를 실제로 수행한 뒤에만 checks를 done으로 저장한다.
+
 `build` 실패 시 새 HTML을 쓰지 않으며 `FAIL` 로그를 기록한다. 기존 HTML이 남을 수 있으므로 이번 생성 결과로 전달하지 않는다. 로그를 쓸 수 없는 경로·권한 오류는 표준 오류와 종료 코드로 확인한다.
 
 성공 출력은 임시 파일을 준비한 뒤 교체하고 로그 교체 실패 시 기존 HTML을 복구한다. HTML과 로그를 하나의 파일시스템 트랜잭션으로 묶지는 않으므로 강제 종료·동시 실행까지 보장하지 않는다. 같은 출력 경로를 여러 작업이 동시에 사용하지 않는다.
